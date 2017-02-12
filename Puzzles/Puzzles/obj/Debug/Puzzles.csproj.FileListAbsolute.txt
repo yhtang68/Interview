@@ -1,0 +1,6 @@
+C:\Projects\Interview\Puzzles\Puzzles\bin\Debug\Puzzles.exe.config
+C:\Projects\Interview\Puzzles\Puzzles\obj\Debug\Puzzles.csprojResolveAssemblyReference.cache
+C:\Projects\Interview\Puzzles\Puzzles\bin\Debug\Puzzles.exe
+C:\Projects\Interview\Puzzles\Puzzles\bin\Debug\Puzzles.pdb
+C:\Projects\Interview\Puzzles\Puzzles\obj\Debug\Puzzles.exe
+C:\Projects\Interview\Puzzles\Puzzles\obj\Debug\Puzzles.pdb
