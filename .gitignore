@@ -1,0 +1,8 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# User-specific IDE files
+*.user
+*.suo
+.vs/
