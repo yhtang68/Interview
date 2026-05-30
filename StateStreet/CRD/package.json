@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "mock:start": "powershell.exe -ExecutionPolicy Bypass -File ./wiremock/start-mock.ps1",
+    "mock:stop": "powershell.exe -ExecutionPolicy Bypass -File ./wiremock/stop-mock.ps1"
+  },
   "dependencies": {
     "wiremock": "^3.13.2"
   }
