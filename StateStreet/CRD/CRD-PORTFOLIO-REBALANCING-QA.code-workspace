@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "name": "CRD Portfolio Rebalancing QA",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "cucumberautocomplete.steps": [
+      "src/step_definitions/**/*.ts"
+    ],
+    "cucumberautocomplete.syncfeatures": "features/**/*.feature",
+    "cucumberautocomplete.strictGherkinCompletion": true,
+    "cucumberautocomplete.smartSnippets": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "eslint.enable": true,
+    "eslint.validate": [
+      "javascript",
+      "typescript",
+      "html",
+      "markdown"
+    ],
+    "files.exclude": {
+      "**/node_modules/**": true
+    },
+    "search.exclude": {
+      "**/node_modules/**": true
+    }
+  }
+}

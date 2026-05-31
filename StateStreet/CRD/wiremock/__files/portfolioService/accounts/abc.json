@@ -5,36 +5,36 @@
     "securities": [
         {
             "security": "IBM",
-            "target_percentage": 0.20,
-            "current_percentage": 0.10,
-            "target_variance": -0.10,
+            "target_percentage": 20,
+            "current_percentage": 10,
+            "target_variance": -10,
             "unit_price": 150
         },
         {
             "security": "MSFT",
-            "target_percentage": 0.20,
-            "current_percentage": 0.20,
+            "target_percentage": 20,
+            "current_percentage": 20,
             "target_variance": 0,
             "unit_price": 90
         },
         {
             "security": "ORCL",
-            "target_percentage": 0.20,
-            "current_percentage": 0.30,
-            "target_variance": 0.10,
+            "target_percentage": 20,
+            "current_percentage": 30,
+            "target_variance": 10,
             "unit_price": 220
         },
         {
             "security": "AAPL",
-            "target_percentage": 0.20,
-            "current_percentage": 0.20,
+            "target_percentage": 20,
+            "current_percentage": 20,
             "target_variance": 0,
             "unit_price": 450
         },
         {
             "security": "HD",
-            "target_percentage": 0.20,
-            "current_percentage": 0.20,
+            "target_percentage": 20,
+            "current_percentage": 20,
             "target_variance": 0,
             "unit_price": 70
         }
