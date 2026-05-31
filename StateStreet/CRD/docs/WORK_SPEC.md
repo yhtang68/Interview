@@ -1,5 +1,7 @@
 # Portfolio Rebalancing QA Solution Overview
 
+> **Last updated:** May 31, 2026 5:45 AM EDT
+
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
 
