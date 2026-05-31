@@ -4,7 +4,7 @@ export interface TestEnvironment {
     envName: string;
     wiremockBaseUrl: string;
     portfolioServiceBasePath: string;
-    mockStatusPath: string;
+    mockHealthPath: string;
 }
 
 export interface TestWorld extends World {
@@ -38,7 +38,7 @@ function isTestEnvironment(value: unknown): value is TestEnvironment {
     return typeof env.envName === 'string'
         && typeof env.wiremockBaseUrl === 'string'
         && typeof env.portfolioServiceBasePath === 'string'
-        && typeof env.mockStatusPath === 'string';
+        && typeof env.mockHealthPath === 'string';
 }
 
 setWorldConstructor(CustomWorld);

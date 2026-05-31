@@ -13,12 +13,16 @@ type Security = {
 
 Given('mock is up', async function (this: TestWorld) {
     log(`Test environment: ${this.env.envName}`);
-    const statusUrl = `${this.env.wiremockBaseUrl}${this.env.mockStatusPath}`;
-    const response = await fetch(statusUrl);
+    const healthUrl = `${this.env.wiremockBaseUrl}${this.env.mockHealthPath}`;
+    const response = await fetch(healthUrl);
 
     if (!response.ok) {
         throw new Error(`Wiremock did not respond as expected. Status: ${response.status} ${response.statusText}`);
     }
+
+    const health = await response.json() as { status?: unknown; version?: unknown };
+    assert.strictEqual(health.status, 'healthy', `Wiremock health status is ${String(health.status)}`);
+    log(`WireMock health: ${health.status}; version: ${String(health.version)}`);
 });
 
 Then('GET portfolio account {string} returns the securities data table:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {

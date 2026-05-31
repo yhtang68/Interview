@@ -4,7 +4,7 @@ const env = {
     envName: 'local',
     wiremockBaseUrl: 'http://localhost:9999',
     portfolioServiceBasePath: '/state-street/crd/portfolioService',
-    mockStatusPath: '/__admin/mappings',
+    mockHealthPath: '/__admin/health',
 };
 
 module.exports = {
