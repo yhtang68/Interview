@@ -1,81 +1,88 @@
 import { Given, Then, DataTable } from '@cucumber/cucumber';
 import assert from 'assert';
-import { log } from '../support/logger';
+import {
+    CrdPortfolioService,
+    Security,
+} from '../services/crd_PortfolioService';
 import { TestWorld } from '../support/world';
 
-type Security = {
-    security: string;
-    target_percentage: number;
-    current_percentage: number;
-    target_variance: number;
-    unit_price: number;
-};
+Given('GET portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    const expectedSecurities = securitiesFrom(dataTable);
+    const portfolio = await portfolioService.fetchPortfolio(accountId);
+    this.responseBody = portfolio;
 
-Given('mock is up', async function (this: TestWorld) {
-    log(`Test environment: ${this.env.envName}`);
-    const healthUrl = `${this.env.wiremockBaseUrl}${this.env.mockHealthPath}`;
-    const response = await fetch(healthUrl);
-
-    if (!response.ok) {
-        throw new Error(`Wiremock did not respond as expected. Status: ${response.status} ${response.statusText}`);
-    }
-
-    const health = await response.json() as { status?: unknown; version?: unknown };
-    assert.strictEqual(health.status, 'healthy', `Wiremock health status is ${String(health.status)}`);
-    log(`WireMock health: ${health.status}; version: ${String(health.version)}`);
+    assertSecurities(portfolio.securities, expectedSecurities);
 });
 
-Then('GET portfolio account {string} returns the securities data table:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
-    const url = `${this.env.wiremockBaseUrl}${this.env.portfolioServiceBasePath}/accounts/${accountId}`;
-    const response = await fetch(url);
+Given('POST portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    const portfolio = portfolioService.createPortfolio(accountId, securitiesFrom(dataTable));
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch mock account data. Status: ${response.status} ${response.statusText}`);
-    }
+    this.dynamicMappingId = await portfolioService.registerDynamicPortfolio(accountId, portfolio);
+});
 
-    this.responseBody = await response.json();
-    assert(this.responseBody, 'Response payload is missing');
-
-    const responseBody = this.responseBody as { securities?: unknown };
-    assert(Array.isArray(responseBody.securities), 'Response does not contain securities array');
-    const securities = responseBody.securities;
-
+Then('portfolio account {string} has the securities balanced:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    const portfolio = await portfolioService.fetchPortfolio(accountId);
+    this.responseBody = portfolio;
     const expectedRows = dataTable.hashes().map((row) => ({
+        security: row.Security,
+        target_percentage: optionalNumber(row['Target %']),
+        current_percentage: optionalNumber(row['Current %']),
+        target_variance: optionalNumber(row['Target Variance']),
+        unit_price: optionalNumber(row['Unit Price']),
+        action: row.Action,
+        shares: Number(row.Shares),
+    }));
+
+    assert.strictEqual(portfolio.account, accountId.toUpperCase());
+    assert.strictEqual(portfolio.securities.length, expectedRows.length);
+
+    expectedRows.forEach((expected) => {
+        const security = portfolio.securities.find((item) => item.security === expected.security);
+        assert(security, `Expected security ${expected.security} not found in response`);
+        assertOptionalValue(security.target_percentage, expected.target_percentage);
+        assertOptionalValue(security.current_percentage, expected.current_percentage);
+        assertOptionalValue(security.target_variance, expected.target_variance);
+        assertOptionalValue(security.unit_price, expected.unit_price);
+
+        const balance = portfolioService.calculateBalance(portfolio, security);
+        assert.strictEqual(balance.action, expected.action);
+        assert.strictEqual(balance.shares, expected.shares);
+    });
+});
+
+function optionalNumber(value: string | undefined): number | undefined {
+    return value === undefined || value === '' ? undefined : Number(value);
+}
+
+function assertOptionalValue(actual: number, expected: number | undefined): void {
+    if (expected !== undefined) {
+        assert.strictEqual(actual, expected);
+    }
+}
+
+function securitiesFrom(dataTable: DataTable): Security[] {
+    return dataTable.hashes().map((row) => ({
         security: row.Security,
         target_percentage: Number(row['Target %']),
         current_percentage: Number(row['Current %']),
         target_variance: Number(row['Target Variance']),
         unit_price: Number(row['Unit Price']),
     }));
+}
 
+function assertSecurities(actualSecurities: Security[], expectedSecurities: Security[]): void {
     assert.strictEqual(
-        securities.length,
-        expectedRows.length,
-        `Expected ${expectedRows.length} securities, but got ${securities.length}`,
+        actualSecurities.length,
+        expectedSecurities.length,
+        `Expected ${expectedSecurities.length} securities, but got ${actualSecurities.length}`,
     );
 
-    expectedRows.forEach((expected) => {
-        const actual = securities.find((item: unknown): item is Security => (
-            isSecurity(item) && item.security === expected.security
-        ));
+    expectedSecurities.forEach((expected) => {
+        const actual = actualSecurities.find((item) => item.security === expected.security);
         assert(actual, `Expected security ${expected.security} not found in response`);
-        assert.strictEqual(actual.security, expected.security);
-        assert.strictEqual(actual.target_percentage, expected.target_percentage);
-        assert.strictEqual(actual.current_percentage, expected.current_percentage);
-        assert.strictEqual(actual.target_variance, expected.target_variance);
-        assert.strictEqual(actual.unit_price, expected.unit_price);
+        assert.deepStrictEqual(actual, expected);
     });
-});
-
-function isSecurity(value: unknown): value is Security {
-    if (typeof value !== 'object' || value === null) {
-        return false;
-    }
-
-    const security = value as Record<string, unknown>;
-    return typeof security.security === 'string'
-        && typeof security.target_percentage === 'number'
-        && typeof security.current_percentage === 'number'
-        && typeof security.target_variance === 'number'
-        && typeof security.unit_price === 'number';
 }

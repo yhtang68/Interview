@@ -54,7 +54,7 @@ function getCucumberConfig(envConfig) {
             environmentInfo: {
                 'Test Runner': process.env.COMPUTERNAME || os.hostname(),
                 'Test Runner User': process.env.USERNAME || process.env.USER || os.userInfo().username,
-                'Test Env Info': `${env.wiremockBaseUrl}${env.mockHealthPath}`,
+                'Test Env Info': env.crd_portfolioService.url,
                 Timezone: process.env.TZ || Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
         },

@@ -1,10 +1,15 @@
 const { getCucumberConfig } = require('../api-test');
 
+const mockUrl = 'http://localhost:9999';
+
 const env = {
     envName: 'local',
-    wiremockBaseUrl: 'http://localhost:9999',
-    portfolioServiceBasePath: '/state-street/crd/portfolioService',
-    mockHealthPath: '/__admin/health',
+    wiremock: {
+        url: mockUrl,
+    },
+    crd_portfolioService: {
+        url: `${mockUrl}/state-street/crd/portfolioService`,
+    },
 };
 
 module.exports = {

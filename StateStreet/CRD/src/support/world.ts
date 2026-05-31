@@ -2,18 +2,23 @@ import { IWorldOptions, setWorldConstructor, World } from '@cucumber/cucumber';
 
 export interface TestEnvironment {
     envName: string;
-    wiremockBaseUrl: string;
-    portfolioServiceBasePath: string;
-    mockHealthPath: string;
+    wiremock: {
+        url: string;
+    };
+    crd_portfolioService: {
+        url: string;
+    };
 }
 
 export interface TestWorld extends World {
     env: TestEnvironment;
+    dynamicMappingId?: string;
     responseBody?: unknown;
 }
 
 export class CustomWorld extends World implements TestWorld {
     env: TestEnvironment;
+    dynamicMappingId?: string;
     responseBody?: unknown;
 
     constructor(options: IWorldOptions) {
@@ -25,6 +30,7 @@ export class CustomWorld extends World implements TestWorld {
         }
 
         this.env = parameters.env;
+        this.dynamicMappingId = undefined;
         this.responseBody = undefined;
     }
 }
@@ -36,9 +42,14 @@ function isTestEnvironment(value: unknown): value is TestEnvironment {
 
     const env = value as Record<string, unknown>;
     return typeof env.envName === 'string'
-        && typeof env.wiremockBaseUrl === 'string'
-        && typeof env.portfolioServiceBasePath === 'string'
-        && typeof env.mockHealthPath === 'string';
+        && hasStringUrl(env.wiremock)
+        && hasStringUrl(env.crd_portfolioService);
+}
+
+function hasStringUrl(value: unknown): value is { url: string } {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as Record<string, unknown>).url === 'string';
 }
 
 setWorldConstructor(CustomWorld);

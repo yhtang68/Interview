@@ -9,6 +9,7 @@ The original assignment is available in:
 
 - [North American - Technical Assessment QA.md](./North%20American%20-%20Technical%20Assessment%20QA.md)
 - [North American - Technical Assessment QA.docx](./North%20American%20-%20Technical%20Assessment%20QA.docx)
+- [North American - Technical Assessment QA.pdf](./North%20American%20-%20Technical%20Assessment%20QA.pdf)
 
 ## Assessment Goal
 
@@ -19,14 +20,15 @@ zero target variance.
 
 ## Solution Overview
 
-The automated QA solution uses Cucumber.js scenarios backed by TypeScript step
-definitions. A local WireMock endpoint supplies deterministic account data so
-the test infrastructure can validate the portfolio contract before the
-rebalancing-output scenarios are implemented.
+The automated QA solution uses Cucumber.js scenarios backed by thin TypeScript
+step definitions. A CRD portfolio service owns the product contract, mocked
+endpoint calls, and rebalancing model. A separate WireMock service owns Admin
+API operations for static fixture checks and scenario-owned dynamic mappings.
 
 The configuration is split into shared Cucumber settings and environment
 profiles. This keeps local URLs outside the shared runner config and allows
-future environments to reuse the same test suite.
+future environments to reuse the same test suite. The local profile states
+explicitly that WireMock currently serves the CRD portfolio product URL.
 
 ## Assumptions
 
@@ -67,25 +69,29 @@ future environments to reuse the same test suite.
 
 - Provide a WireMock endpoint for account portfolio data.
 - Keep the mapping and JSON fixture readable and deterministic.
+- Register and remove scenario-owned dynamic mappings through the WireMock
+  Admin API.
 - Make the base URL and endpoint path configurable for local execution.
 
 ### 4. Automate Portfolio Input Validation
 
 - Use Cucumber feature scenarios and TypeScript step definitions.
-- Verify WireMock availability before making assertions.
+- Verify WireMock availability before each scenario.
 - Fetch account `ABC` and validate the portfolio securities input table.
 
 ### 5. Automate Rebalancing Output Validation
 
 - Exercise or model the application output for buy, sell, and no-trade cases.
 - Assert the total number of shares for every security.
+- Allow the balance assertion table to show either the calculated columns only
+  or the full securities contract.
 - Add focused scenarios for rounding behavior and invalid inputs once the
   application contract is confirmed.
 
 ### 6. Verify Delivery And Review Readiness
 
 - Run `bun run lint`.
-- Run `bunx tsc --noEmit`.
+- Run `bun run build`.
 - Start WireMock with `bun run mock:start`.
 - Run the local Cucumber suite with `.\run-tests.ps1 -TestEnv local`.
 - Review the PR against this spec and call out any unimplemented items,
@@ -96,11 +102,12 @@ future environments to reuse the same test suite.
 | Area | Status | Notes |
 | --- | --- | --- |
 | Requirements and assumptions | Complete | Baseline calculations are documented above. |
-| Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, failure diagnostics hook, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
-| WireMock contract | Complete | Local account `ABC` mapping and fixture are available. |
-| Portfolio input validation | Complete | The current scenario validates all supplied securities data. |
+| Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, thin step definitions, named lifecycle hooks with focused helpers, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
+| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service owns fixed Admin API routes and registers or removes scenario-owned dynamic mappings. |
+| CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, dynamic fixture definitions, payload validation, and modeled balance calculations. |
+| Portfolio input validation | Complete | The static `GET` fixture scenario validates the supplied securities data. The dynamic setup scenario posts a scenario-owned mocked `GET` mapping through the WireMock Admin API. |
 | Manual test cases | Pending | Add the interview-ready manual coverage matrix. |
-| Rebalancing output validation | Pending | Add scenarios and implementation for calculated buy, sell, and no-trade shares. |
+| Rebalancing output validation | Complete | The dynamic account scenario models and validates buy, sell, and no-trade shares rounded to four decimals. |
 
 ## PR Review Checklist
 
@@ -108,5 +115,5 @@ future environments to reuse the same test suite.
 - [ ] Manual test cases are included.
 - [x] WireMock starts locally and serves the account fixture.
 - [x] Cucumber validates the supplied portfolio input.
-- [ ] Automated checks validate buy, sell, and no-trade share outputs.
+- [x] Automated checks validate buy, sell, and no-trade share outputs.
 - [x] ESLint, Gherkin lint, TypeScript compilation, and the local Cucumber suite pass.

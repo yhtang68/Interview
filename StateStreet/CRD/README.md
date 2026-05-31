@@ -23,6 +23,7 @@ The assignment source is available in:
 
 - [North American - Technical Assessment QA.md](./docs/North%20American%20-%20Technical%20Assessment%20QA.md)
 - [North American - Technical Assessment QA.docx](./docs/North%20American%20-%20Technical%20Assessment%20QA.docx)
+- [North American - Technical Assessment QA.pdf](./docs/North%20American%20-%20Technical%20Assessment%20QA.pdf)
 
 ## Architecture Decision
 
@@ -45,6 +46,7 @@ The local workflow is intentionally simple:
 
 | Tool | Version | Purpose | Public Reference |
 | --- | --- | --- | --- |
+| Allure Report | `2.42.0` | Interactive test report generator | [allure-commandline - npm README](https://www.npmjs.com/package/allure-commandline) |
 | Bun | `1.3.14` | Script runner | [Bun - Docs](https://bun.sh/docs) |
 | Cucumber.js | `12.5.0` | BDD test runner | [@cucumber/cucumber - npm README](https://www.npmjs.com/package/@cucumber/cucumber) |
 | ESLint | `9.39.4` | JavaScript and TypeScript linter | [eslint - npm README](https://www.npmjs.com/package/eslint) |
@@ -55,7 +57,6 @@ The local workflow is intentionally simple:
 | PowerShell | `7.6.2` | Windows automation shell | [PowerShell - Docs](https://learn.microsoft.com/powershell/) |
 | TypeScript | `5.9.3` | Typed JavaScript language | [typescript - npm README](https://www.npmjs.com/package/typescript) |
 | WireMock | `3.13.2` | HTTP API mock server | [wiremock - npm README](https://www.npmjs.com/package/wiremock) |
-| Allure Report | `2.42.0` | Interactive test report generator | [allure-commandline - npm README](https://www.npmjs.com/package/allure-commandline) |
 
 - The **VS Code Workspace** is configured for the `Cucumber (Gherkin) Full
   Support` extension (`alexkrechik.cucumberautocomplete`) so `.feature` files
@@ -100,10 +101,14 @@ The Cucumber.js infrastructure is organized as follows:
 | File | Feature |
 | --- | --- |
 | [`run-tests.ps1`](./run-tests.ps1) | - Selects `config/env/<environment>.api.conf.js` at runtime.<br>- Supports feature-name tokens or explicit feature paths. |
-| [`config/env/local.api.conf.js`](./config/env/local.api.conf.js) | Supplies environment-specific values and calls the shared config builder. |
-| [`config/api-test.js`](./config/api-test.js) | - Builds the shared Cucumber profile.<br>- Exposes environment values through `worldParameters`.<br>- Defines timeout and retry defaults as the suite grows.<br>- Writes JUnit XML and Allure result data.<br>- Adds test runner, environment, and timezone metadata to Allure. |
+| [`config/env/local.api.conf.js`](./config/env/local.api.conf.js) | - Supplies environment-specific values and calls the shared config builder.<br>- Defines the WireMock host and the CRD portfolio product URL currently served by that mock. |
+| [`config/api-test.js`](./config/api-test.js) | - Builds the shared Cucumber profile.<br>- Exposes environment values through `worldParameters`.<br>- Defines timeout and retry defaults as the suite grows.<br>- Writes JUnit XML and Allure result data.<br>- Adds test runner, runner user, environment, and timezone metadata to Allure. |
+| [`src/step_definitions/api_steps.ts`](./src/step_definitions/api_steps.ts) | - Translates Gherkin tables into typed input.<br>- Stores response data for failure diagnostics.<br>- Asserts static portfolio and balanced-trade expectations. |
+| [`src/services/crd_PortfolioService.ts`](./src/services/crd_PortfolioService.ts) | - Defines the CRD portfolio contract and readable endpoint tree.<br>- Calls the mocked product endpoint.<br>- Registers dynamic portfolio fixtures through the WireMock service.<br>- Models balanced security trades. |
+| [`src/services/joinUrls.ts`](./src/services/joinUrls.ts) | Joins service URL parts without relying on slash placement. |
+| [`src/services/wiremockService.ts`](./src/services/wiremockService.ts) | - Owns fixed WireMock Admin API routes.<br>- Verifies mock health.<br>- Creates and removes scenario-owned dynamic mappings. |
 | [`src/support/setup.ts`](./src/support/setup.ts) | Applies the configured step timeout during runtime setup. |
-| [`src/support/hooks.ts`](./src/support/hooks.ts) | Attaches parsed response JSON when a scenario fails. |
+| [`src/support/hooks.ts`](./src/support/hooks.ts) | - Uses named lifecycle hooks with focused helper functions.<br>- Verifies WireMock health before each scenario.<br>- Attaches parsed response JSON when a scenario fails.<br>- Removes scenario-owned dynamic mappings afterward. |
 | [`src/support/logger.ts`](./src/support/logger.ts) | - Keeps embedded output aligned with Gherkin.<br>- Supports grey info, yellow warning, and red error messages. |
 | [`src/support/world.ts`](./src/support/world.ts) | Makes the selected environment available to each typed Cucumber World instance. |
 
