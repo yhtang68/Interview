@@ -48,6 +48,22 @@ export async function createWireMockMapping(config: WireMockAdminConfig, mapping
     return createdMapping.id;
 }
 
+export async function updateWireMockMapping(
+    config: WireMockAdminConfig,
+    mappingId: string,
+    mapping: WireMockMapping,
+): Promise<void> {
+    const response = await fetch(`${wireMockAdminUrl(config, wireMockAdminPaths.mappings)}/${mappingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mapping),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to update dynamic WireMock mapping. Status: ${response.status} ${response.statusText}`);
+    }
+}
+
 export async function removeDynamicMapping(config: WireMockAdminConfig, mappingId?: string): Promise<void> {
     if (!mappingId) {
         return;

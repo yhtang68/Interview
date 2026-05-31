@@ -2,9 +2,12 @@
     "account": "ABC",
     "total_asset": 100000,
     "vested": 1.0,
+    "cash_percentage": 0,
+    "stocks_percentage": 100,
     "securities": [
         {
             "security": "IBM",
+            "current_value": 10000,
             "target_percentage": 20,
             "current_percentage": 10,
             "target_variance": -10,
@@ -12,6 +15,7 @@
         },
         {
             "security": "MSFT",
+            "current_value": 20000,
             "target_percentage": 20,
             "current_percentage": 20,
             "target_variance": 0,
@@ -19,6 +23,7 @@
         },
         {
             "security": "ORCL",
+            "current_value": 30000,
             "target_percentage": 20,
             "current_percentage": 30,
             "target_variance": 10,
@@ -26,6 +31,7 @@
         },
         {
             "security": "AAPL",
+            "current_value": 20000,
             "target_percentage": 20,
             "current_percentage": 20,
             "target_variance": 0,
@@ -33,6 +39,7 @@
         },
         {
             "security": "HD",
+            "current_value": 20000,
             "target_percentage": 20,
             "current_percentage": 20,
             "target_variance": 0,
