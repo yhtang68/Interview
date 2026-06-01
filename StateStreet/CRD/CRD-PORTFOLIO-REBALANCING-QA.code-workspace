@@ -29,6 +29,11 @@
     },
     "search.exclude": {
       "**/node_modules/**": true
-    }
+    },
+    "cSpell.words": [
+      "cucumberjs",
+      "gplint",
+      "gplintrc"
+    ]
   }
 }
