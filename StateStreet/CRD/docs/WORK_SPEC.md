@@ -1,9 +1,12 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 1, 2026 6:31 AM EDT
+> **Last updated:** June 1, 2026 12:33 PM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
+
+`README.md` remains the test architecture and execution guide. The Gherkin
+feature files remain the self-documented source for scenario behavior.
 
 ## Assignment Reference
 
@@ -37,7 +40,7 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
 | Term | Decision |
 | --- | --- |
 | **Action** | - **Buy / Sell** whole **Shares** of the security to meet the **Target %**.<br>- **No Trade** when the security is already at its **Target %**. |
-| **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
+| **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is authoritative account metadata. It is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
 | **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Balance Flow:**<br>&nbsp;&nbsp;- **Overweight Stock:** Sell whole shares and move the executed trade value into **CRD_CASH**. Any unsellable remainder stays in the stock.<br>&nbsp;&nbsp;- **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent remainder stays in **CRD_CASH**.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
 | **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- **Unit Price** is the agreed trade price used by **Balanced** processing.<br>&nbsp;&nbsp;- Do not use **Unit Price** to reverse-engineer existing shares. |
 
@@ -101,12 +104,28 @@ follows the steps defined above.
 
 - Provide a WireMock endpoint for account portfolio data.
 - Keep the mapping and JSON fixture readable and deterministic.
+- Match the static `ABC` portfolio fixture explicitly so an account without a
+  portfolio returns `404` instead of matching a missing file-backed response.
 - Reset prior mappings to the static file-backed baseline before each test run
   through the WireMock Admin API.
 - Retain scenario-owned dynamic mappings after the run for debugging.
 - Label scenario-owned mappings with readable metadata and update an existing
   account mapping when a later given republishes the same account.
-- Update scenario-owned mappings after asset-cache refreshes and rebalancing.
+- Publish the account-name collection at `/accounts` and refresh it when a
+  dynamic account fixture is added.
+- Allow the mock contract to publish an account name without an individual
+  portfolio fixture. This intentionally represents an incomplete account setup
+  state for focused testing.
+- Clear static and dynamic account mappings through the CRD account service
+  when an empty account collection is required.
+- Remove individual account endpoints when clearing the collection so hidden
+  account fixtures cannot remain reachable by ID.
+- Reset the CRD account system to restore the static file-backed account
+  baseline after account collection changes.
+- Keep account collection listing, clearing, and reset scenarios in a
+  dedicated `crd-accounts.feature` file.
+- Update scenario-owned mappings after derived asset-metadata refreshes and
+  rebalancing.
 - Make the base URL and endpoint path configurable for local execution.
 
 ### 4. Automate Portfolio Input Validation
@@ -114,11 +133,17 @@ follows the steps defined above.
 - Use Cucumber feature scenarios and TypeScript step definitions.
 - Verify WireMock availability before each test run.
 - Fetch account `ABC` and validate the portfolio securities input table.
-- Calculate total assets from security current values.
+- Preserve the account-supplied total asset value and validate each security
+  current value against its allocation percentage.
+- Stage dynamic account metadata and securities by account so either setup
+  order merges into one validated portfolio fixture.
+- Revise an existing dynamic account through the same setup flow. WireMock
+  metadata identifies the account mapping so the validated fixture replaces
+  the prior response without creating a duplicate.
 - Preserve vested percentage as a separate account-level input.
 - Cache the derived cash and stocks percentages at the account level.
-- Treat cached account asset values as optional: validate them when present and
-  log a warning when a fixture should be patched.
+- Treat total asset as authoritative account metadata. Do not derive it from
+  `Unit Price` or reverse-engineer it from trade orders.
 
 ### 5. Automate Rebalancing Output Validation
 
@@ -147,11 +172,11 @@ follows the steps defined above.
 | --- | --- | --- |
 | Requirements and assumptions | Complete | Trade-math decisions are documented above. |
 | Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, thin step definitions, named lifecycle hooks with focused helpers, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
-| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service resets mappings to the file-backed baseline before each run, finds scenario-owned dynamic mappings by readable metadata labels, updates repeated account mappings, and retains published dynamic mappings afterward for debugging. |
-| CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, dynamic fixture definitions, current-value asset calculations, payload validation, whole-share balancing, and `CRD_CASH` handling. |
-| Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and calculated assets. The dynamic setup scenario posts a scenario-owned mocked `GET` mapping through the WireMock Admin API and verifies its asset cache. |
+| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service fetches mappings for CRD-owned filtering, resets mappings to the file-backed baseline before each run, finds scenario-owned dynamic mappings by readable metadata labels, updates repeated account mappings, and retains published dynamic mappings afterward for debugging. |
+| CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, account-name collection listing, clearing, and reset, dynamic fixture definitions, authoritative total-asset metadata, current-value validation, payload validation, whole-share balancing, and `CRD_CASH` handling. Clearing accounts removes the collection and individual account endpoints. Reset restores the static file-backed baseline. |
+| Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and asset metadata. Dynamic setup stages asset metadata and securities by account, merges them in either order, and validates their current-value allocations before publishing the fixture. Existing dynamic accounts follow the same flow and are revised through WireMock mapping metadata. |
 | Manual test cases | Pending | Add the interview-ready manual coverage matrix. |
-| Rebalancing output validation | Complete | The dynamic account scenario validates buy, sell, no-trade, whole-share truncation, mapping updates, final holdings, asset cache, and the `CRD_CASH` remainder. |
+| Rebalancing output validation | Complete | A dedicated balance feature validates buy, sell, no-trade, whole-share truncation, mapping updates, final holdings, asset metadata, and the `CRD_CASH` remainder. |
 
 ## PR Review Checklist
 

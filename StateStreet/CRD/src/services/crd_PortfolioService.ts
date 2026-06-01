@@ -1,6 +1,10 @@
 import assert from 'assert';
 import { joinUrls } from './joinUrls';
 import {
+    fetchWireMockMappings,
+    RegisteredWireMockMapping,
+    removeWireMockMapping,
+    resetWireMockMappings,
     upsertWireMockMapping,
     updateWireMockMapping,
     WireMockAdminConfig,
@@ -24,7 +28,7 @@ export type Security = {
 
 export type Portfolio = {
     account: string;
-    total_asset?: number;
+    total_asset: number;
     vested?: number;
     cash_percentage?: number;
     stocks_percentage?: number;
@@ -36,6 +40,10 @@ export type PortfolioAsset = {
     vested?: number;
     cash_percentage: number;
     stocks_percentage: number;
+};
+
+export type PortfolioAccounts = {
+    accounts: string[];
 };
 
 export type SecurityTrade = {
@@ -53,6 +61,10 @@ export class CrdPortfolioService {
     get api() {
         return {
             accounts: {
+                list: {
+                    path: this.apiPath('accounts'),
+                    url: this.apiUrl('accounts'),
+                },
                 account: (accountId: string) => ({
                     path: this.apiPath(`accounts/${accountId}`),
                     url: this.apiUrl(`accounts/${accountId}`),
@@ -61,11 +73,19 @@ export class CrdPortfolioService {
         };
     }
 
-    createPortfolio(accountId: string, securities: Security[]): Portfolio {
-        return this.withDerivedData({
+    createPortfolio(accountId: string, asset: PortfolioAsset): Portfolio {
+        return {
             account: accountId.toUpperCase(),
-            securities,
-        });
+            ...asset,
+            securities: [],
+        };
+    }
+
+    mergePortfolioSecurities(portfolio: Portfolio, securities: Security[]): Portfolio {
+        const mergedPortfolio = { ...portfolio, securities };
+        this.validateSecurityAllocations(mergedPortfolio);
+
+        return this.withDerivedAssetMetadata(mergedPortfolio);
     }
 
     async fetchPortfolio(accountId: string): Promise<Portfolio> {
@@ -83,54 +103,99 @@ export class CrdPortfolioService {
         return portfolio;
     }
 
+    async fetchPortfolioAccounts(): Promise<PortfolioAccounts> {
+        const response = await fetch(this.api.accounts.list.url);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch mock portfolio accounts. Status: ${response.status} ${response.statusText}`);
+        }
+
+        const portfolioAccounts = await response.json();
+        if (!isPortfolioAccounts(portfolioAccounts)) {
+            throw new Error('Portfolio accounts response payload is invalid');
+        }
+
+        return portfolioAccounts;
+    }
+
+    async hasPortfolio(accountId: string): Promise<boolean> {
+        const response = await fetch(this.api.accounts.account(accountId).url);
+
+        if (response.status === 404) {
+            return false;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to check mock account data. Status: ${response.status} ${response.statusText}`);
+        }
+
+        return true;
+    }
+
     async registerDynamicPortfolio(accountId: string, portfolio: Portfolio): Promise<string> {
-        return upsertWireMockMapping(this.config, this.portfolioMapping(accountId, portfolio));
+        const mappingId = await upsertWireMockMapping(this.config, this.portfolioMapping(accountId, portfolio));
+        await this.registerPortfolioAccount(accountId);
+
+        return mappingId;
+    }
+
+    async clearPortfolioAccounts(): Promise<void> {
+        const mappings = await fetchWireMockMappings(this.config);
+        const portfolioAccountMappings = mappings.filter((mapping) => this.isPortfolioAccountMapping(mapping));
+
+        await Promise.all(portfolioAccountMappings.map((mapping) => {
+            assert(mapping.id, 'Portfolio account WireMock mapping ID is missing');
+            return removeWireMockMapping(this.config, mapping.id);
+        }));
+
+        await upsertWireMockMapping(this.config, this.portfolioAccountsMapping({ accounts: [] }));
+    }
+
+    async resetPortfolioAccountSystem(): Promise<void> {
+        await resetWireMockMappings(this.config);
     }
 
     async updateDynamicPortfolio(accountId: string, mappingId: string, portfolio: Portfolio): Promise<void> {
         await updateWireMockMapping(this.config, mappingId, this.portfolioMapping(accountId, portfolio));
     }
 
-    calculatePortfolioAsset(securities: Security[]): PortfolioAsset {
-        const totalAsset = sum(securities.map(this.securityValue));
-        const cashValue = this.cashValue(securities);
+    deriveAssetAllocationMetadata(portfolio: Portfolio): PortfolioAsset {
+        const totalAsset = this.totalAssetFrom(portfolio);
+        const securitiesValue = sum(portfolio.securities.map(this.securityValue));
+        const cashValue = this.cashValue(portfolio.securities);
+        assertApproximatelyEqual(securitiesValue, totalAsset, 'securities total');
 
         return {
-            total_asset: round(totalAsset),
+            total_asset: totalAsset,
+            vested: portfolio.vested,
             cash_percentage: totalAsset === 0 ? 0 : round((cashValue / totalAsset) * 100),
             stocks_percentage: totalAsset === 0 ? 0 : round(((totalAsset - cashValue) / totalAsset) * 100),
         };
     }
 
-    hasAssetCache(portfolio: Portfolio): boolean {
+    hasCompleteAssetMetadata(portfolio: Portfolio): boolean {
         return typeof portfolio.total_asset === 'number'
             && typeof portfolio.vested === 'number'
             && typeof portfolio.cash_percentage === 'number'
             && typeof portfolio.stocks_percentage === 'number';
     }
 
-    assertAssetCacheMatches(portfolio: Portfolio): PortfolioAsset {
-        const calculatedAsset = this.calculatePortfolioAsset(portfolio.securities);
+    validatePortfolioAssetMetadata(portfolio: Portfolio): PortfolioAsset {
+        this.validateSecurityAllocations(portfolio);
+        const derivedAssetMetadata = this.deriveAssetAllocationMetadata(portfolio);
 
-        if (this.hasAssetCache(portfolio)) {
-            assertApproximatelyEqual(portfolio.total_asset, calculatedAsset.total_asset, 'total_asset');
-            assertApproximatelyEqual(portfolio.cash_percentage, calculatedAsset.cash_percentage, 'cash_percentage');
-            assertApproximatelyEqual(portfolio.stocks_percentage, calculatedAsset.stocks_percentage, 'stocks_percentage');
+        if (this.hasCompleteAssetMetadata(portfolio)) {
+            assertApproximatelyEqual(portfolio.total_asset, derivedAssetMetadata.total_asset, 'total_asset');
+            assertApproximatelyEqual(portfolio.cash_percentage, derivedAssetMetadata.cash_percentage, 'cash_percentage');
+            assertApproximatelyEqual(portfolio.stocks_percentage, derivedAssetMetadata.stocks_percentage, 'stocks_percentage');
         }
 
-        return {
-            ...calculatedAsset,
-            vested: portfolio.vested,
-        };
-    }
-
-    refreshAssetCache(portfolio: Portfolio, vested = portfolio.vested): Portfolio {
-        return this.withDerivedData({ ...portfolio, vested });
+        return derivedAssetMetadata;
     }
 
     balancePortfolio(portfolio: Portfolio): { portfolio: Portfolio; trades: SecurityTrade[] } {
-        const sourcePortfolio = this.withDerivedData(portfolio);
-        const totalAsset = sourcePortfolio.total_asset as number;
+        const sourcePortfolio = this.withDerivedAssetMetadata(portfolio);
+        const totalAsset = sourcePortfolio.total_asset;
         let cashValue = this.cashValue(sourcePortfolio.securities);
         const trades: SecurityTrade[] = [];
 
@@ -167,8 +232,9 @@ export class CrdPortfolioService {
         }
 
         return {
-            portfolio: this.withDerivedData({
+            portfolio: this.withBalancedSecurities({
                 account: sourcePortfolio.account,
+                total_asset: totalAsset,
                 vested: sourcePortfolio.vested,
                 securities,
             }),
@@ -176,17 +242,26 @@ export class CrdPortfolioService {
         };
     }
 
-    private withDerivedData(portfolio: Portfolio): Portfolio {
-        const asset = this.calculatePortfolioAsset(portfolio.securities);
+    private withDerivedAssetMetadata(portfolio: Portfolio): Portfolio {
+        const assetMetadata = this.deriveAssetAllocationMetadata(portfolio);
 
         return {
             account: portfolio.account,
             vested: portfolio.vested,
-            ...asset,
+            ...assetMetadata,
+            securities: portfolio.securities,
+        };
+    }
+
+    private withBalancedSecurities(portfolio: Portfolio): Portfolio {
+        const portfolioWithMetadata = this.withDerivedAssetMetadata(portfolio);
+
+        return {
+            ...portfolioWithMetadata,
             securities: portfolio.securities.map((security) => {
-                const currentPercentage = asset.total_asset === 0
+                const currentPercentage = portfolioWithMetadata.total_asset === 0
                     ? 0
-                    : round((this.securityValue(security) / asset.total_asset) * 100);
+                    : round((this.securityValue(security) / portfolioWithMetadata.total_asset) * 100);
 
                 return {
                     ...security,
@@ -208,6 +283,24 @@ export class CrdPortfolioService {
 
     private securityValue(security: Security): number {
         return security.current_value;
+    }
+
+    private totalAssetFrom(portfolio: Portfolio): number {
+        assert(typeof portfolio.total_asset === 'number', 'Portfolio total_asset is missing');
+        return portfolio.total_asset;
+    }
+
+    private validateSecurityAllocations(portfolio: Portfolio): void {
+        const totalAsset = this.totalAssetFrom(portfolio);
+        portfolio.securities.forEach((security) => {
+            const expectedCurrentValue = totalAsset * (security.current_percentage / 100);
+            assertApproximatelyEqual(security.current_value, expectedCurrentValue, `${security.security} current_value`);
+            assertApproximatelyEqual(
+                security.target_variance,
+                security.current_percentage - security.target_percentage,
+                `${security.security} target_variance`,
+            );
+        });
     }
 
     private portfolioMapping(accountId: string, portfolio: Portfolio): WireMockMapping {
@@ -232,6 +325,46 @@ export class CrdPortfolioService {
         };
     }
 
+    async registerPortfolioAccount(accountId: string): Promise<void> {
+        const portfolioAccounts = await this.fetchPortfolioAccounts();
+        const accounts = [...new Set([...portfolioAccounts.accounts, accountId.toUpperCase()])].sort();
+
+        await upsertWireMockMapping(this.config, this.portfolioAccountsMapping({ accounts }));
+    }
+
+    private portfolioAccountsMapping(portfolioAccounts: PortfolioAccounts): WireMockMapping {
+        return {
+            metadata: {
+                mappingKey: 'crd_portfolioService:portfolio-accounts',
+                owner: 'crd-portfolio-qa',
+                service: 'crd_portfolioService',
+                resource: 'portfolio-accounts',
+            },
+            priority: 10,
+            request: {
+                method: 'GET',
+                urlPathPattern: `${this.api.accounts.list.path}/?`,
+            },
+            response: {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+                jsonBody: portfolioAccounts,
+            },
+        };
+    }
+
+    private isPortfolioAccountMapping(mapping: RegisteredWireMockMapping): boolean {
+        const accountsPath = this.api.accounts.list.path;
+        const requestPath = mapping.request.urlPath
+            ?? mapping.request.urlPathPattern
+            ?? mapping.request.urlPathTemplate;
+
+        return requestPath === accountsPath
+            || requestPath === `${accountsPath}/`
+            || requestPath === `${accountsPath}/?`
+            || requestPath?.startsWith(`${accountsPath}/`) === true;
+    }
+
     private apiUrl(api: string): string {
         return joinUrls(this.config.crd_portfolioService.url, api);
     }
@@ -243,7 +376,7 @@ export class CrdPortfolioService {
 
 function assertApproximatelyEqual(actual: number | undefined, expected: number, field: string): void {
     assert(typeof actual === 'number', `Portfolio ${field} cache is missing`);
-    assert(Math.abs(actual - expected) < 0.0001, `Portfolio ${field} cache ${actual} does not match calculated ${expected}`);
+    assert(Math.abs(actual - expected) < 0.0001, `Portfolio ${field} ${actual} does not match expected ${expected}`);
 }
 
 function round(value: number): number {
@@ -261,12 +394,22 @@ function isPortfolio(value: unknown): value is Portfolio {
 
     const portfolio = value as Record<string, unknown>;
     return typeof portfolio.account === 'string'
-        && optionalNumber(portfolio.total_asset)
+        && typeof portfolio.total_asset === 'number'
         && optionalNumber(portfolio.vested)
         && optionalNumber(portfolio.cash_percentage)
         && optionalNumber(portfolio.stocks_percentage)
         && Array.isArray(portfolio.securities)
         && portfolio.securities.every(isSecurity);
+}
+
+function isPortfolioAccounts(value: unknown): value is PortfolioAccounts {
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
+
+    const portfolioAccounts = value as Record<string, unknown>;
+    return Array.isArray(portfolioAccounts.accounts)
+        && portfolioAccounts.accounts.every((account) => typeof account === 'string');
 }
 
 function optionalNumber(value: unknown): boolean {

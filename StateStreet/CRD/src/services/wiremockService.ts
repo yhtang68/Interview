@@ -24,6 +24,7 @@ export type WireMockMapping = {
     request: {
         method: string;
         urlPath?: string;
+        urlPathPattern?: string;
         urlPathTemplate?: string;
     };
     response: {
@@ -33,6 +34,10 @@ export type WireMockMapping = {
         bodyFileName?: string;
         transformers?: string[];
     };
+};
+
+export type RegisteredWireMockMapping = WireMockMapping & {
+    id?: string;
 };
 
 export async function createWireMockMapping(config: WireMockAdminConfig, mapping: WireMockMapping): Promise<string> {
@@ -97,6 +102,21 @@ export async function removeWireMockMapping(config: WireMockAdminConfig, mapping
     if (!response.ok) {
         throw new Error(`Failed to remove WireMock mapping. Status: ${response.status} ${response.statusText}`);
     }
+}
+
+export async function fetchWireMockMappings(config: WireMockAdminConfig): Promise<RegisteredWireMockMapping[]> {
+    const response = await fetch(wireMockAdminUrl(config, wireMockAdminPaths.mappings));
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch WireMock mappings. Status: ${response.status} ${response.statusText}`);
+    }
+
+    const body = await response.json() as { mappings?: unknown };
+    if (!Array.isArray(body.mappings)) {
+        throw new Error('WireMock mappings response payload is invalid');
+    }
+
+    return body.mappings as RegisteredWireMockMapping[];
 }
 
 export async function resetWireMockMappings(config: WireMockAdminConfig): Promise<void> {

@@ -1,4 +1,5 @@
 import { IWorldOptions, setWorldConstructor, World } from '@cucumber/cucumber';
+import type { PortfolioAsset, Security } from '../services/crd_PortfolioService';
 
 export interface TestEnvironment {
     envName: string;
@@ -12,13 +13,20 @@ export interface TestEnvironment {
 
 export interface TestWorld extends World {
     env: TestEnvironment;
-    dynamicMappingId?: string;
+    dynamicMappingIds: Record<string, string>;
+    pendingDynamicPortfolios: Record<string, PendingDynamicPortfolio>;
     responseBody?: unknown;
 }
 
+export type PendingDynamicPortfolio = {
+    asset?: PortfolioAsset;
+    securities?: Security[];
+};
+
 export class CustomWorld extends World implements TestWorld {
     env: TestEnvironment;
-    dynamicMappingId?: string;
+    dynamicMappingIds: Record<string, string>;
+    pendingDynamicPortfolios: Record<string, PendingDynamicPortfolio>;
     responseBody?: unknown;
 
     constructor(options: IWorldOptions) {
@@ -30,7 +38,8 @@ export class CustomWorld extends World implements TestWorld {
         }
 
         this.env = parameters.env;
-        this.dynamicMappingId = undefined;
+        this.dynamicMappingIds = {};
+        this.pendingDynamicPortfolios = {};
         this.responseBody = undefined;
     }
 }

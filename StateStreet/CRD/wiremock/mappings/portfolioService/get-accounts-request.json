@@ -1,7 +1,7 @@
 {
   "priority": 80,
   "request": {
-    "urlPath": "/state-street/crd/portfolioService/accounts/abc",
+    "urlPathPattern": "/state-street/crd/portfolioService/accounts/?",
     "method": "GET"
   },
   "response": {
@@ -9,6 +9,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "bodyFileName": "portfolioService/accounts/abc.json"
+    "bodyFileName": "portfolioService/accounts.json"
   }
 }

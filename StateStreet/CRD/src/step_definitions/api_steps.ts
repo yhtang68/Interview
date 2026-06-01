@@ -11,6 +11,10 @@ import { TestWorld } from '../support/world';
 
 type ExpectedSecurity = Partial<Omit<Security, 'security'>> & Pick<Security, 'security'>;
 
+Given('POST account system reset', async function (this: TestWorld) {
+    await resetPortfolioAccountSystem(this);
+});
+
 Given('GET portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
@@ -20,43 +24,44 @@ Given('GET portfolio account {string} has the securities:', async function (this
 });
 
 Given('POST portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    const portfolio = portfolioService.createPortfolio(accountId, securitiesFrom(dataTable));
-
-    this.dynamicMappingId = await portfolioService.registerDynamicPortfolio(accountId, portfolio);
-    this.responseBody = portfolio;
+    await stageDynamicPortfolio(this, accountId, { securities: securitiesFrom(dataTable) });
 });
 
 Given('POST portfolio account {string} has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
-    await refreshPortfolioAsset(this, accountId, dataTable);
+    await stageDynamicPortfolio(this, accountId, { asset: assetFrom(dataTable) });
 });
 
-Given('POST portfolio account {string} has asset', async function (this: TestWorld, accountId: string) {
-    await refreshPortfolioAsset(this, accountId);
+When('POST account {string}', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    await portfolioService.registerPortfolioAccount(accountId);
 });
 
-async function refreshPortfolioAsset(world: TestWorld, accountId: string, dataTable?: DataTable): Promise<void> {
-    const portfolioService = new CrdPortfolioService(world.env);
-    const portfolio = await portfolioService.fetchPortfolio(accountId);
-    const calculatedAsset = portfolioService.assertAssetCacheMatches(portfolio);
-    let vested = portfolio.vested;
+async function stageDynamicPortfolio(
+    world: TestWorld,
+    accountId: string,
+    fragment: TestWorld['pendingDynamicPortfolios'][string],
+): Promise<void> {
+    const pendingPortfolio = {
+        ...world.pendingDynamicPortfolios[accountId],
+        ...fragment,
+    };
+    world.pendingDynamicPortfolios[accountId] = pendingPortfolio;
 
-    if (dataTable) {
-        const expectedAsset = assetFrom(dataTable);
-        assert.strictEqual(calculatedAsset.total_asset, expectedAsset.total_asset, 'Unexpected total asset');
-        assert.strictEqual(calculatedAsset.cash_percentage, expectedAsset.cash_percentage, 'Unexpected cash percentage');
-        assert.strictEqual(calculatedAsset.stocks_percentage, expectedAsset.stocks_percentage, 'Unexpected stocks percentage');
-        vested = expectedAsset.vested;
-        log(`Portfolio account ${accountId} total asset reference matches the calculated securities value.`);
-        log(`Portfolio account ${accountId} vested percentage stored from the account-level reference.`);
+    if (!pendingPortfolio.asset || !pendingPortfolio.securities) {
+        log(`Portfolio account ${accountId} setup fragment staged; waiting for matching asset metadata and securities.`);
+        return;
     }
 
-    assert(world.dynamicMappingId, `Dynamic WireMock mapping is missing for portfolio account ${accountId}`);
+    const portfolioService = new CrdPortfolioService(world.env);
+    const portfolio = portfolioService.mergePortfolioSecurities(
+        portfolioService.createPortfolio(accountId, pendingPortfolio.asset),
+        pendingPortfolio.securities,
+    );
 
-    const refreshedPortfolio = portfolioService.refreshAssetCache(portfolio, vested);
-    await portfolioService.updateDynamicPortfolio(accountId, world.dynamicMappingId, refreshedPortfolio);
-    world.responseBody = refreshedPortfolio;
-    log(`Portfolio account ${accountId} asset cache refreshed from securities.`);
+    world.dynamicMappingIds[accountId] = await portfolioService.registerDynamicPortfolio(accountId, portfolio);
+    delete world.pendingDynamicPortfolios[accountId];
+    world.responseBody = portfolio;
+    log(`Portfolio account ${accountId} asset metadata and securities merged, validated, and published.`);
 }
 
 When('POST portfolio account {string} has the securities balanced:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
@@ -65,26 +70,79 @@ When('POST portfolio account {string} has the securities balanced:', async funct
     const balanced = portfolioService.balancePortfolio(portfolio);
 
     assertTrades(balanced.trades, tradesFrom(dataTable));
-    assert(this.dynamicMappingId, `Dynamic WireMock mapping is missing for portfolio account ${accountId}`);
+    const mappingId = this.dynamicMappingIds[accountId];
+    assert(mappingId, `Dynamic WireMock mapping is missing for portfolio account ${accountId}`);
 
-    await portfolioService.updateDynamicPortfolio(accountId, this.dynamicMappingId, balanced.portfolio);
+    await portfolioService.updateDynamicPortfolio(accountId, mappingId, balanced.portfolio);
     this.responseBody = balanced.portfolio;
 });
 
 Then('GET portfolio account {string} has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
-    const calculatedAsset = portfolioService.assertAssetCacheMatches(portfolio);
+    const validatedAssetMetadata = portfolioService.validatePortfolioAssetMetadata(portfolio);
     this.responseBody = portfolio;
 
-    if (portfolioService.hasAssetCache(portfolio)) {
-        log(`Portfolio account ${accountId} asset cache matches the calculated securities value.`);
+    if (portfolioService.hasCompleteAssetMetadata(portfolio)) {
+        log(`Portfolio account ${accountId} asset metadata matches the securities allocation.`);
     } else {
-        log(`Portfolio account ${accountId} asset cache is missing; calculated the asset from securities. Patch the fixture cache.`, 'warning');
+        log(`Portfolio account ${accountId} derived asset metadata is missing; derived allocation percentages from securities. Patch the fixture metadata.`, 'warning');
     }
 
-    assertAsset(calculatedAsset, assetFrom(dataTable));
+    assertAsset(validatedAssetMetadata, assetFrom(dataTable));
 });
+
+When('POST clear accounts', async function (this: TestWorld) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    await portfolioService.clearPortfolioAccounts();
+
+    this.dynamicMappingIds = {};
+    this.pendingDynamicPortfolios = {};
+    this.responseBody = { accounts: [] };
+});
+
+Then('GET accounts has:', async function (this: TestWorld, dataTable: DataTable) {
+    const portfolioAccounts = await fetchPortfolioAccounts(this);
+
+    accountNamesFrom(dataTable).forEach((expectedAccount) => {
+        assert(
+            portfolioAccounts.accounts.includes(expectedAccount),
+            `Expected portfolio account ${expectedAccount} not found in response`,
+        );
+    });
+});
+
+Then('GET accounts is empty', async function (this: TestWorld) {
+    const portfolioAccounts = await fetchPortfolioAccounts(this);
+    assert.deepStrictEqual(portfolioAccounts.accounts, []);
+});
+
+Then('GET portfolio account {string} exists', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    assert(await portfolioService.hasPortfolio(accountId), `Expected portfolio account ${accountId} to exist`);
+});
+
+Then('GET portfolio account {string} is missing', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    assert(!(await portfolioService.hasPortfolio(accountId)), `Expected portfolio account ${accountId} to be missing`);
+});
+
+async function fetchPortfolioAccounts(world: TestWorld) {
+    const portfolioService = new CrdPortfolioService(world.env);
+    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
+    world.responseBody = portfolioAccounts;
+
+    return portfolioAccounts;
+}
+
+async function resetPortfolioAccountSystem(world: TestWorld): Promise<void> {
+    const portfolioService = new CrdPortfolioService(world.env);
+    await portfolioService.resetPortfolioAccountSystem();
+
+    world.dynamicMappingIds = {};
+    world.pendingDynamicPortfolios = {};
+    world.responseBody = undefined;
+}
 
 function securitiesFrom(dataTable: DataTable): Security[] {
     return dataTable.hashes().map((row) => ({
@@ -127,6 +185,10 @@ function assetFrom(dataTable: DataTable): PortfolioAsset {
         cash_percentage: requiredNumber(row['Cash %'], 'Cash %'),
         stocks_percentage: requiredNumber(row['Stocks %'], 'Stocks %'),
     };
+}
+
+function accountNamesFrom(dataTable: DataTable): string[] {
+    return dataTable.hashes().map((row) => row.Account);
 }
 
 function currencyNumber(value: string | undefined): number {
