@@ -141,6 +141,7 @@ export class CrdPortfolioService {
 
     async clearPortfolioAccounts(): Promise<void> {
         const mappings = await fetchWireMockMappings(this.config);
+        // Clearing the collection also removes static and dynamic individual portfolio mappings.
         const portfolioAccountMappings = mappings.filter((mapping) => this.isPortfolioAccountMapping(mapping));
 
         await Promise.all(portfolioAccountMappings.map((mapping) => {
@@ -151,7 +152,14 @@ export class CrdPortfolioService {
         await upsertWireMockMapping(this.config, this.portfolioAccountsMapping({ accounts: [] }));
     }
 
+    async removePortfolioAccount(accountId: string): Promise<void> {
+        const portfolioAccounts = await this.fetchPortfolioAccounts();
+        const accounts = portfolioAccounts.accounts.filter((account) => account !== accountId.toUpperCase());
+        await upsertWireMockMapping(this.config, this.portfolioAccountsMapping({ accounts }));
+    }
+
     async resetPortfolioAccountSystem(): Promise<void> {
+        // Restores static file-backed mappings, including the default ABC account and portfolio.
         await resetWireMockMappings(this.config);
     }
 
@@ -326,6 +334,7 @@ export class CrdPortfolioService {
     }
 
     async registerPortfolioAccount(accountId: string): Promise<void> {
+        // The account-name collection is independent from individual portfolio mappings.
         const portfolioAccounts = await this.fetchPortfolioAccounts();
         const accounts = [...new Set([...portfolioAccounts.accounts, accountId.toUpperCase()])].sort();
 

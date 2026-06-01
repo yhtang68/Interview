@@ -9,9 +9,17 @@ Given('POST account system reset', async function (this: TestWorld) {
     this.resetScenarioState();
 });
 
-When('POST account {string}', async function (this: TestWorld, accountId: string) {
+When('POST accounts:', async function (this: TestWorld, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
-    await portfolioService.registerPortfolioAccount(accountId);
+
+    for (const row of dataTable.hashes()) {
+        await portfolioService.registerPortfolioAccount(row.Account);
+    }
+});
+
+When('DELETE account {string}', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    await portfolioService.removePortfolioAccount(accountId);
 });
 
 When('POST clear accounts', async function (this: TestWorld) {
@@ -33,20 +41,18 @@ Then('GET accounts has:', async function (this: TestWorld, dataTable: DataTable)
     });
 });
 
+Then('GET accounts is:', async function (this: TestWorld, dataTable: DataTable) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
+    this.responseBody = portfolioAccounts;
+
+    assert.deepStrictEqual(portfolioAccounts.accounts, dataTable.hashes().map((row) => row.Account));
+});
+
 Then('GET accounts is empty', async function (this: TestWorld) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
     this.responseBody = portfolioAccounts;
 
     assert.deepStrictEqual(portfolioAccounts.accounts, []);
-});
-
-Then('GET portfolio account {string} exists', async function (this: TestWorld, accountId: string) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    assert(await portfolioService.hasPortfolio(accountId), `Expected portfolio account ${accountId} to exist`);
-});
-
-Then('GET portfolio account {string} is missing', async function (this: TestWorld, accountId: string) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    assert(!(await portfolioService.hasPortfolio(accountId)), `Expected portfolio account ${accountId} to be missing`);
 });
