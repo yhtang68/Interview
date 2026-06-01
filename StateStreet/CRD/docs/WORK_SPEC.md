@@ -1,6 +1,6 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** May 31, 2026 5:51 PM EDT
+> **Last updated:** June 1, 2026 12:28 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
@@ -17,8 +17,8 @@ The original assignment is available in:
 
 Test a portfolio rebalancing application for account `ABC`, which has
 `$100,000` in total assets and is `100%` vested. The application output must
-report the correct number of shares to buy or sell for each security to reach
-zero target variance.
+report the correct number of shares to buy or sell for each security to
+approach zero target variance under whole-share execution.
 
 ## Solution Overview
 
@@ -36,44 +36,50 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
 
 | Term | Decision |
 | --- | --- |
-| **Action** | The proposed rebalancing instruction for a security: **Buy**, **Sell**, or **No Trade**. |
-| **Action - Buy** | Purchase the calculated number of whole **Shares** because the security is below its **Target %**. |
-| **Action - No Trade** | Do not place an order because the security is already at its **Target %**. |
-| **Action - Sell** | Sell the calculated number of whole **Shares** because the security is above its **Target %**. |
-| **Asset Value** | Use **Current Value** as each security's current asset value. For example, IBM has `$10,000` in current value. Do not use its `$150` **Unit Price**, which is the acceptable target trading price, to reverse-engineer `66.6667` existing shares. |
-| **Asset Value - Metadata** | - The account-level asset view contains `Total Asset`, `Vested %`, `Cash %`, and `Stocks %`.<br>- The service stores these values as a cache to reduce repeated calculations.<br>- Securities remain the source of truth, and the cache is updated by **Balanced** processing. |
-| **Balanced** | - A portfolio is balanced when each security reaches its **Target %** as closely as whole-share execution allows.<br>- Any unavoidable remainder is preserved as `CRD_CASH`, so a small residual target variance remains visible instead of being silently discarded, to avoid losing value over time.<br>- The service refreshes the **Asset Value - Metadata** cache after balancing. |
-| **Cash %** | The percentage of total account assets held as `CRD_CASH`. It is derived from the securities data and stored in the account asset cache. |
-| **CRD_CASH** | Unallocated value is preserved as `CRD_CASH`, with a unit price of `$1`, so the complete account value remains visible and auditable. |
-| **Current %** | The percentage of total account assets currently allocated to a security. |
-| **Current Value** | Portfolio securities use allocation values as the source of truth: `current value = current percentage * total asset`. |
-| **Security** | A portfolio holding or cash position included in the rebalance calculation. |
-| **Shares** | The whole-share quantity proposed for a **Buy** or **Sell** action. |
-| **Static Existing Shares** | `Unit Price` must not be used to infer the static account's existing share count. The original assignment does not provide that holding detail. |
-| **Stocks %** | The percentage of total account assets held as securities other than `CRD_CASH`. It is derived from the securities data and stored in the account asset cache. |
-| **Target %** | The desired percentage of total account assets allocated to a security after rebalancing. |
-| **Target Variance - Negative** | The account is underweight and must buy. |
-| **Target Variance - Positive** | The account is overweight and must sell. |
-| **Target Variance - Zero** | No trade is required. |
-| **Total Asset** | The complete account value, calculated as the sum of all security current values, including `CRD_CASH`. |
-| **Unit Price** | This is the acceptable target trading price for the new buy or sell order. It will usually be the latest observed market price when rebalancing starts. It is used to calculate the proposed trade quantity, but it does not describe the historical cost of shares already owned. |
-| **Vested %** | This account-level percentage is supplied by the product contract and cannot be derived from security holdings alone. It means the percentage of total account assets available for rebalancing trades. For example, an account with `$100,000` in total assets and `80%` vested has `$80,000` available for trading. |
-| **Whole-Share Execution** | Decimal share quantities are not accepted because rounding can silently lose portfolio value. A fractional calculated trade is truncated toward zero. |
+| **Action** | - **Buy / Sell** whole **Shares** of the security to meet the **Target %**.<br>- **No Trade** when the security is already at its **Target %**. |
+| **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
+| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Remainder:** Trade by the **Shares** rule. Keep the remainder in **CRD_CASH** to avoid losing money.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
+| **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- Do not use **Unit Price** to reverse-engineer existing shares. |
 
-## Expected Baseline Output
+## Trade Math
 
-The assignment baseline below shows the theoretical fractional-share
-calculation before execution constraints are applied. Executed trades must use
-whole shares. The automated dynamic scenario verifies that any remainder is
-preserved as `CRD_CASH`.
+The **Balanced** calculation applies each security's **Target %** in three
+steps:
 
-| Security | Target Variance | Unit Price | Required Action | Expected Shares |
-| --- | ---: | ---: | --- | ---: |
-| IBM | -10% | $150 | Buy | 66.6667 |
-| MSFT | 0% | $90 | No trade | 0 |
-| ORCL | 10% | $220 | Sell | 45.4545 |
-| AAPL | 0% | $450 | No trade | 0 |
-| HD | 0% | $70 | No trade | 0 |
+1. Calculate `[Target Value]` and `[Trade Value]`:
+   - `[Target Value] = [Total Asset] * [Target %]`
+   - `[Trade Value] = [Target Value] - [Current Value]`
+
+2. Convert the required change into an executable order:
+   - `[Whole Shares] = truncate(abs([Trade Value]) / [Unit Price])`
+   - A positive `[Trade Value]` requires **Buy**.
+   - A negative `[Trade Value]` requires **Sell**.
+   - A zero `[Trade Value]` requires **No Trade**.
+
+3. Apply the order and preserve the remainder:
+   - `[Updated Current Value] = [Current Value] +/- ([Whole Shares] * [Unit Price])`
+   - **Buy** actions consume available **CRD_CASH**, while **Sell** actions
+     replenish it.
+   - Store any remaining value as **CRD_CASH**, then refresh the **Asset**
+     metadata cache.
+
+For example, the IBM security in
+[North American - Technical Assessment QA.md](./North%20American%20-%20Technical%20Assessment%20QA.md)
+follows the steps defined above.
+
+1. Calculate `[Target Value]` and `[Trade Value]`:
+   - `[Target Value] = $100,000 * 20% = $20,000`
+   - `[Trade Value] = $20,000 - $10,000 = $10,000`
+
+2. Convert the required change into an executable order:
+   - `[Whole Shares] = truncate($10,000 / $150) = 66`
+   - Apply a **Buy** action.
+
+3. Apply the order and preserve the remainder:
+   - `[Updated Current Value] = $10,000 + (66 * $150) = $19,900`
+   - Consume available cash or **Sell** proceeds for the **Buy** action.
+     - The supplied example does not include **CRD_CASH** to consume yet.
+   - Keep the `$100` residual target gap visible.
 
 ## Six-Step Delivery Plan
 
@@ -81,7 +87,7 @@ preserved as `CRD_CASH`.
 
 - Document the rebalancing formula, sign convention, vested-assets rule,
   whole-share execution rule, and `CRD_CASH` remainder handling.
-- Confirm the expected baseline output before automating assertions.
+- Confirm the trade-math flow before automating assertions.
 
 ### 2. Define Manual Test Coverage
 
@@ -135,7 +141,7 @@ preserved as `CRD_CASH`.
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Requirements and assumptions | Complete | Baseline calculations are documented above. |
+| Requirements and assumptions | Complete | Trade-math decisions are documented above. |
 | Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, thin step definitions, named lifecycle hooks with focused helpers, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
 | WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service owns fixed Admin API routes and registers or removes scenario-owned dynamic mappings. |
 | CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, dynamic fixture definitions, current-value asset calculations, payload validation, whole-share balancing, and `CRD_CASH` handling. |
