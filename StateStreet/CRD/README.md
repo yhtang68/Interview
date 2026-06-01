@@ -96,22 +96,27 @@ bunx cucumber-js --version
 
 ## Cucumber.js
 
+Test execution starts with `.\run-tests.ps1`. The runner invokes
+`bunx cucumber-js --config config/env/<environment>.api.conf.js`, and the
+selected environment profile calls the shared builder in `config/api-test.js`.
+
 The Cucumber.js infrastructure is organized as follows:
 
 | File | Feature |
 | --- | --- |
-| [`run-tests.ps1`](./run-tests.ps1) | - Selects `config/env/<environment>.api.conf.js` at runtime.<br>- Supports feature-name tokens or explicit feature paths. |
+| [`run-tests.ps1`](./run-tests.ps1) | - Provides the key local test-runner entry point.<br>- Accepts or prompts for an environment and optional feature selection.<br>- Validates and selects `config/env/<environment>.api.conf.js` at runtime.<br>- Prints the resolved run config and enables colored output.<br>- Launches the local Cucumber.js version through `bunx` and returns its exit code for CI. |
 | [`features/`](./features) | Contains self-documented Gherkin scenarios organized by product behavior. |
 | [`config/env/local.api.conf.js`](./config/env/local.api.conf.js) | - Supplies environment-specific values and calls the shared config builder.<br>- Defines the WireMock host and the CRD portfolio product URL currently served by that mock. |
 | [`config/api-test.js`](./config/api-test.js) | - Builds the shared Cucumber profile.<br>- Exposes environment values through `worldParameters`.<br>- Defines timeout and retry defaults as the suite grows.<br>- Writes JUnit XML and Allure result data.<br>- Adds test runner, runner user, environment, and timezone metadata to Allure. |
-| [`src/step_definitions/api_steps.ts`](./src/step_definitions/api_steps.ts) | - Translates Gherkin tables into typed input.<br>- Stores response data for failure diagnostics.<br>- Asserts securities, asset-metadata, and balanced-trade expectations. |
+| [`src/step_definitions/`](./src/step_definitions) | - Organizes thin step definitions by product behavior.<br>- Translates Gherkin tables into typed service calls and focused assertions.<br>- Stores response data for failure diagnostics. |
+| [`src/services/`](./src/services) | Owns product behavior, endpoint calls, portfolio calculations, and WireMock administration. |
 | [`src/services/crd_PortfolioService.ts`](./src/services/crd_PortfolioService.ts) | - Defines the CRD portfolio contract and readable endpoint tree.<br>- Calls the mocked product endpoint.<br>- Lists, clears, and resets mocked portfolio accounts.<br>- Preserves account-level `Total Asset` metadata and validates security current values against allocation percentages.<br>- Refreshes the mocked account-name collection when dynamic accounts are published.<br>- Refreshes derived asset metadata and updates scenario-owned portfolio fixtures.<br>- Models whole-share trades and preserves remaining value as `CRD_CASH`. |
 | [`src/services/joinUrls.ts`](./src/services/joinUrls.ts) | Joins service URL parts without relying on slash placement. |
 | [`src/services/wiremockService.ts`](./src/services/wiremockService.ts) | - Owns fixed WireMock Admin API routes.<br>- Verifies mock health.<br>- Fetches mappings for CRD-owned filtering.<br>- Resets mappings to the static file-backed baseline before a run.<br>- Finds dynamic mappings by readable metadata labels.<br>- Creates, updates, or removes mappings. |
 | [`src/support/setup.ts`](./src/support/setup.ts) | Applies the configured step timeout during runtime setup. |
 | [`src/support/hooks.ts`](./src/support/hooks.ts) | - Uses named lifecycle hooks with focused helper functions.<br>- Verifies WireMock health before the run.<br>- Resets prior mappings to the static file-backed baseline before the run.<br>- Attaches parsed response JSON when a scenario fails.<br>- Retains dynamic mappings afterward for debugging. |
 | [`src/support/logger.ts`](./src/support/logger.ts) | - Keeps embedded output aligned with Gherkin.<br>- Supports grey info, yellow warning, and red error messages. |
-| [`src/support/world.ts`](./src/support/world.ts) | Makes the selected environment available to each typed Cucumber World instance. |
+| [`src/support/world.ts`](./src/support/world.ts) | - Provides the scenario-scoped handshake between Cucumber and product-facing code.<br>- Carries environment config, staged input, response diagnostics, and scenario-owned WireMock mapping IDs. |
 
 The mocked CRD product endpoints are:
 
@@ -186,6 +191,9 @@ Each test run generates:
 | Allure result data | `results/allure-results/*.json` | Raw execution data consumed by Allure Report. |
 | Allure HTML report | `reports/allure-report/index.html` | Formatted single-file interactive report generated from the Allure result data. |
 
+- The generated `results/` and `reports/` directories are excluded from Git.
+- Allure Report uses the same Java runtime required by WireMock.
+
 Generate and open the formatted Allure report:
 
 ```powershell
@@ -205,5 +213,8 @@ Clear generated results and reports:
 bun run reports:clear
 ```
 
-- The generated `results/` and `reports/` directories are excluded from Git.
-- Allure Report uses the same Java runtime required by WireMock.
+Clear previous artifacts and start a fresh local test run:
+
+```powershell
+bun run reports:clear; bun run test:local
+```
