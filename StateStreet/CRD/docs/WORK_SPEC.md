@@ -38,8 +38,8 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
 | --- | --- |
 | **Action** | - **Buy / Sell** whole **Shares** of the security to meet the **Target %**.<br>- **No Trade** when the security is already at its **Target %**. |
 | **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
-| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Remainder:** Trade by the **Shares** rule. Keep the remainder in **CRD_CASH** to avoid losing money.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
-| **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- Do not use **Unit Price** to reverse-engineer existing shares. |
+| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Balance Flow:**<br>&nbsp;&nbsp;- **Overweight Stock:** Sell whole shares and move the executed trade value into **CRD_CASH**. Any unsellable remainder stays in the stock.<br>&nbsp;&nbsp;- **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent remainder stays in **CRD_CASH**.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
+| **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- **Unit Price** is the agreed trade price used by **Balanced** processing.<br>&nbsp;&nbsp;- Do not use **Unit Price** to reverse-engineer existing shares. |
 
 ## Trade Math
 
@@ -69,17 +69,18 @@ follows the steps defined above.
 
 1. Calculate `[Target Value]` and `[Trade Value]`:
    - `[Target Value] = $100,000 * 20% = $20,000`
+   - `[Current Value] = $100,000 * 10% = $10,000`
    - `[Trade Value] = $20,000 - $10,000 = $10,000`
 
 2. Convert the required change into an executable order:
    - `[Whole Shares] = truncate($10,000 / $150) = 66`
-   - Apply a **Buy** action.
+   - IBM requires a **Buy** action.
 
 3. Apply the order and preserve the remainder:
    - `[Updated Current Value] = $10,000 + (66 * $150) = $19,900`
    - Consume available cash or **Sell** proceeds for the **Buy** action.
      - The supplied example does not include **CRD_CASH** to consume yet.
-   - Keep the `$100` residual target gap visible.
+   - When cash is available, keep the unspent `$100` in **CRD_CASH**.
 
 ## Six-Step Delivery Plan
 
