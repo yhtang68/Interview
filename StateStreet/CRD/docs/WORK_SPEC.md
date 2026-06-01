@@ -1,6 +1,6 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 1, 2026 12:28 AM EDT
+> **Last updated:** June 1, 2026 6:31 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
@@ -101,15 +101,18 @@ follows the steps defined above.
 
 - Provide a WireMock endpoint for account portfolio data.
 - Keep the mapping and JSON fixture readable and deterministic.
-- Register and remove scenario-owned dynamic mappings through the WireMock
-  Admin API.
+- Reset prior mappings to the static file-backed baseline before each test run
+  through the WireMock Admin API.
+- Retain scenario-owned dynamic mappings after the run for debugging.
+- Label scenario-owned mappings with readable metadata and update an existing
+  account mapping when a later given republishes the same account.
 - Update scenario-owned mappings after asset-cache refreshes and rebalancing.
 - Make the base URL and endpoint path configurable for local execution.
 
 ### 4. Automate Portfolio Input Validation
 
 - Use Cucumber feature scenarios and TypeScript step definitions.
-- Verify WireMock availability before each scenario.
+- Verify WireMock availability before each test run.
 - Fetch account `ABC` and validate the portfolio securities input table.
 - Calculate total assets from security current values.
 - Preserve vested percentage as a separate account-level input.
@@ -144,7 +147,7 @@ follows the steps defined above.
 | --- | --- | --- |
 | Requirements and assumptions | Complete | Trade-math decisions are documented above. |
 | Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, thin step definitions, named lifecycle hooks with focused helpers, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
-| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service owns fixed Admin API routes and registers or removes scenario-owned dynamic mappings. |
+| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service resets mappings to the file-backed baseline before each run, finds scenario-owned dynamic mappings by readable metadata labels, updates repeated account mappings, and retains published dynamic mappings afterward for debugging. |
 | CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, dynamic fixture definitions, current-value asset calculations, payload validation, whole-share balancing, and `CRD_CASH` handling. |
 | Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and calculated assets. The dynamic setup scenario posts a scenario-owned mocked `GET` mapping through the WireMock Admin API and verifies its asset cache. |
 | Manual test cases | Pending | Add the interview-ready manual coverage matrix. |

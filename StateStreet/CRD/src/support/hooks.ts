@@ -1,24 +1,32 @@
-import { After, Before, Status } from '@cucumber/cucumber';
-import { checkWireMockHealth, removeDynamicMapping } from '../services/wiremockService';
+import { After, BeforeAll, Status } from '@cucumber/cucumber';
+import { checkWireMockHealth, resetWireMockMappings } from '../services/wiremockService';
 import { log } from './logger';
-import { TestWorld } from './world';
+import { isTestEnvironment, TestEnvironment, TestWorld } from './world';
 
-// Verify the selected mock dependency before each scenario runs.
-Before<TestWorld>({ name: 'Verify WireMock health' }, async function () {
-    log(`Test environment: ${this.env.envName}`);
-    const health = await checkWireMockHealth(this.env);
+// Reset prior debug data once per run while restoring the file-backed static mappings.
+BeforeAll({ name: 'Prepare WireMock mappings' }, async function () {
+    const env = testEnvironmentFrom(this.parameters);
+    log(`Test environment: ${env.envName}`);
+    const health = await checkWireMockHealth(env);
     log(`WireMock health: ${health.status}; version: ${String(health.version)}`);
+    await resetWireMockMappings(env);
+    log('WireMock mappings reset to the static file-backed baseline.');
 });
 
-// Remove scenario-owned mock data after each scenario.
-After<TestWorld>({ name: 'Clean WireMock mappings' }, async function () {
-    await removeDynamicMapping(this.env, this.dynamicMappingId);
-});
-
-// Preserve failed payloads for diagnosis before scenario-owned mock data is removed.
+// Preserve failed payloads for diagnosis while retaining mock data for debugging.
 After<TestWorld>({ name: 'Attach failure diagnostics' }, async function ({ result }) {
     await attachFailureDiagnostics(this, result?.status);
 });
+
+function testEnvironmentFrom(parameters: unknown): TestEnvironment {
+    const value = parameters as { env?: unknown };
+
+    if (!isTestEnvironment(value.env)) {
+        throw new Error('Cucumber run parameters are missing a valid environment configuration');
+    }
+
+    return value.env;
+}
 
 async function attachFailureDiagnostics(world: TestWorld, status?: string): Promise<void> {
     if (status === Status.FAILED && world.responseBody !== undefined) {

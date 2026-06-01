@@ -35,7 +35,7 @@ export class CustomWorld extends World implements TestWorld {
     }
 }
 
-function isTestEnvironment(value: unknown): value is TestEnvironment {
+export function isTestEnvironment(value: unknown): value is TestEnvironment {
     if (typeof value !== 'object' || value === null) {
         return false;
     }

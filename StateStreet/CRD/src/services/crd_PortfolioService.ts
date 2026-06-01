@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { joinUrls } from './joinUrls';
 import {
-    createWireMockMapping,
+    upsertWireMockMapping,
     updateWireMockMapping,
     WireMockAdminConfig,
     WireMockMapping,
@@ -84,7 +84,7 @@ export class CrdPortfolioService {
     }
 
     async registerDynamicPortfolio(accountId: string, portfolio: Portfolio): Promise<string> {
-        return createWireMockMapping(this.config, this.portfolioMapping(accountId, portfolio));
+        return upsertWireMockMapping(this.config, this.portfolioMapping(accountId, portfolio));
     }
 
     async updateDynamicPortfolio(accountId: string, mappingId: string, portfolio: Portfolio): Promise<void> {
@@ -212,6 +212,13 @@ export class CrdPortfolioService {
 
     private portfolioMapping(accountId: string, portfolio: Portfolio): WireMockMapping {
         return {
+            metadata: {
+                mappingKey: `crd_portfolioService:portfolio-account:${accountId}`,
+                owner: 'crd-portfolio-qa',
+                service: 'crd_portfolioService',
+                resource: 'portfolio-account',
+                accountId,
+            },
             priority: 10,
             request: {
                 method: 'GET',

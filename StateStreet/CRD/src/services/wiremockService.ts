@@ -9,6 +9,8 @@ export type WireMockAdminConfig = {
 const wireMockAdminPaths = {
     health: '/__admin/health',
     mappings: '/__admin/mappings',
+    findMappingsByMetadata: '/__admin/mappings/find-by-metadata',
+    resetMappings: '/__admin/mappings/reset',
 };
 
 export type WireMockHealth = {
@@ -17,15 +19,19 @@ export type WireMockHealth = {
 };
 
 export type WireMockMapping = {
+    metadata?: Record<string, unknown>;
     priority: number;
     request: {
         method: string;
-        urlPath: string;
+        urlPath?: string;
+        urlPathTemplate?: string;
     };
     response: {
         status: number;
         headers: Record<string, string>;
-        jsonBody: unknown;
+        jsonBody?: unknown;
+        bodyFileName?: string;
+        transformers?: string[];
     };
 };
 
@@ -48,6 +54,27 @@ export async function createWireMockMapping(config: WireMockAdminConfig, mapping
     return createdMapping.id;
 }
 
+export async function upsertWireMockMapping(config: WireMockAdminConfig, mapping: WireMockMapping): Promise<string> {
+    const mappingKey = mapping.metadata?.mappingKey;
+    if (typeof mappingKey !== 'string') {
+        throw new Error('Replacing a WireMock mapping requires a metadata mappingKey');
+    }
+
+    const matchingIds = (await findWireMockMappingsByMetadata(config, mappingKey))
+        .map((existingMapping) => existingMapping.id)
+        .filter((mappingId): mappingId is string => typeof mappingId === 'string');
+
+    const [mappingId, ...duplicateMappingIds] = matchingIds;
+    await Promise.all(duplicateMappingIds.map((duplicateMappingId) => removeWireMockMapping(config, duplicateMappingId)));
+
+    if (!mappingId) {
+        return createWireMockMapping(config, mapping);
+    }
+
+    await updateWireMockMapping(config, mappingId, mapping);
+    return mappingId;
+}
+
 export async function updateWireMockMapping(
     config: WireMockAdminConfig,
     mappingId: string,
@@ -64,15 +91,19 @@ export async function updateWireMockMapping(
     }
 }
 
-export async function removeDynamicMapping(config: WireMockAdminConfig, mappingId?: string): Promise<void> {
-    if (!mappingId) {
-        return;
-    }
-
+export async function removeWireMockMapping(config: WireMockAdminConfig, mappingId: string): Promise<void> {
     const response = await fetch(`${wireMockAdminUrl(config, wireMockAdminPaths.mappings)}/${mappingId}`, { method: 'DELETE' });
 
     if (!response.ok) {
-        throw new Error(`Failed to remove dynamic WireMock mapping. Status: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to remove WireMock mapping. Status: ${response.status} ${response.statusText}`);
+    }
+}
+
+export async function resetWireMockMappings(config: WireMockAdminConfig): Promise<void> {
+    const resetResponse = await fetch(wireMockAdminUrl(config, wireMockAdminPaths.resetMappings), { method: 'POST' });
+
+    if (!resetResponse.ok) {
+        throw new Error(`Failed to reset WireMock mappings. Status: ${resetResponse.status} ${resetResponse.statusText}`);
     }
 }
 
@@ -103,6 +134,32 @@ export async function checkWireMockHealth(config: WireMockAdminConfig): Promise<
         status: health.status,
         version: health.version,
     };
+}
+
+async function findWireMockMappingsByMetadata(config: WireMockAdminConfig, mappingKey: string): Promise<Array<{
+    id?: unknown;
+}>> {
+    const response = await fetch(wireMockAdminUrl(config, wireMockAdminPaths.findMappingsByMetadata), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            matchesJsonPath: {
+                expression: '$.mappingKey',
+                equalTo: mappingKey,
+            },
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to find WireMock mappings by metadata. Status: ${response.status} ${response.statusText}`);
+    }
+
+    const body = await response.json() as { mappings?: unknown };
+    if (!Array.isArray(body.mappings)) {
+        throw new Error('WireMock mappings response payload is invalid');
+    }
+
+    return body.mappings as Array<{ id?: unknown }>;
 }
 
 function wireMockAdminUrl(config: WireMockAdminConfig, path: string): string {
