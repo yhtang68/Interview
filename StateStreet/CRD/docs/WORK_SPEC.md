@@ -1,6 +1,6 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 2, 2026 8:48 AM EDT
+> **Last updated:** June 2, 2026 10:09 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
@@ -100,9 +100,9 @@ follows the steps defined above.
 
 ### 1. Capture Requirements And Assumptions
 
-- **Explicit Rules:** Document the rebalancing formula, sign convention, vested-assets rule,
-  whole-share execution rule, and `CRD_CASH` remainder handling.
-- **Validated Math:** Confirm the [trade-math flow](#trade-math) before automating assertions.
+- **Explicit Rules:** See [Assumptions](#assumptions) and
+  [Trade Math](#trade-math).
+- **Validated Math:** See [Trade Math](#trade-math).
 
 ### 2. Define Test Coverage
 
@@ -148,24 +148,23 @@ follows the steps defined above.
 
 | Rule | Requirement |
 | --- | --- |
-| **Mock Health** | Verify WireMock availability before each test run. |
+| **Mock Health** | For example, `GET http://localhost:9999/__admin/health`. |
 
 #### **- Account {} - Portfolio Input -**
 
 | Rule | Requirement |
 | --- | --- |
-| **Authoritative Asset** | Preserve the account-supplied total asset value and validate each security current value against its allocation percentage. |
-| **Derived Cache** | Cache the derived cash and stocks percentages at the account level. |
-| **Flexible Setup Order** | Stage dynamic account metadata and securities by account so either setup order merges into one validated portfolio fixture. |
-| **No Reverse Engineering** | Treat total asset as authoritative account metadata. Do not derive it from `Unit Price` or reverse-engineer it from trade orders. |
-| **Revision Flow** | Revise an existing dynamic account through the same setup flow. WireMock metadata identifies the account mapping so the validated fixture replaces the prior response without creating a duplicate. |
-| **Vested Input** | Preserve vested percentage as a separate account-level input. |
+| **Authoritative Asset** | See `wiremock/__files/portfolioService/accounts/abc.json`. |
+| **Derived Cache** | For example, `{ "cash_percentage": 0.2, "stocks_percentage": 99.8 }`. |
+| **Flexible Setup Order** | Support `POST securities` then `POST asset`, or `POST asset` then `POST securities`. |
+| **No Reverse Engineering** | Do not derive `total_asset` from `unit_price`. |
+| **Vested Input** | For example, `{ "vested": 0.8 }`. |
 
 #### **- Cucumber -**
 
 | Rule | Requirement |
 | --- | --- |
-| **Readable Automation** | Use Cucumber feature scenarios and TypeScript step definitions. |
+| **Readable Automation** | See `features/*.feature` and `src/step_definitions/*.ts`. |
 
 ### 5. Automate Rebalancing Output Validation
 
@@ -173,22 +172,22 @@ follows the steps defined above.
 
 | Rule | Requirement |
 | --- | --- |
-| **Vested Visibility** | Keep account-level vested percentage visible in scenario data so partial-vesting behavior can be defined when the product contract is clear. |
-| **Visible Remainder** | Preserve any remaining value as the `CRD_CASH` security. |
+| **Vested Visibility** | For example, `{ "vested": 0.8 }`. |
+| **Visible Remainder** | See `features/crd-account-portfolio-balanced.feature`. |
 
 #### **- Security {} - Trade Validation -**
 
 | Rule | Requirement |
 | --- | --- |
-| **Flexible Assertions** | Allow the balance assertion table to show either the calculated columns only or the full securities contract. |
-| **Trade Actions** | Exercise or model the application output for buy, sell, and no-trade cases. |
-| **Whole Shares** | Assert the whole-share trade count for every security. |
+| **Flexible Assertions** | See `features/crd-account-portfolio-balanced.feature`. |
+| **Trade Actions** | For example, `{ "security": "IBM", "action": "Buy", "shares": 16 }`. |
+| **Whole Shares** | For example, `{ "security": "IBM", "shares": 16 }`. |
 
 #### **- Test Coverage -**
 
 | Rule | Requirement |
 | --- | --- |
-| **Focused Edges** | Add focused scenarios for whole-share remainder behavior and invalid inputs once the application contract is confirmed. |
+| **Focused Edges** | See the backlog in `features/crd-account-portfolio.feature`. |
 
 ### 6. Verify Delivery And Review Readiness
 
