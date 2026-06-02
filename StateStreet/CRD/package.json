@@ -2,6 +2,7 @@
   "name": "crd-portfolio-rebalancing-qa",
   "private": true,
   "dependencies": {
+    "decimal.js": "^10.6.0",
     "wiremock": "^3.13.2"
   },
   "devDependencies": {

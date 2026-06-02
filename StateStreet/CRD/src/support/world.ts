@@ -16,6 +16,7 @@ export interface TestWorld extends World {
     dynamicMappingIds: Record<string, string>;
     pendingDynamicPortfolios: Record<string, PendingDynamicPortfolio>;
     responseBody?: unknown;
+    responseError?: Error;
     resetScenarioState(responseBody?: unknown): void;
 }
 
@@ -29,6 +30,7 @@ export class CustomWorld extends World implements TestWorld {
     dynamicMappingIds: Record<string, string>;
     pendingDynamicPortfolios: Record<string, PendingDynamicPortfolio>;
     responseBody?: unknown;
+    responseError?: Error;
 
     constructor(options: IWorldOptions) {
         super(options);
@@ -42,12 +44,14 @@ export class CustomWorld extends World implements TestWorld {
         this.dynamicMappingIds = {};
         this.pendingDynamicPortfolios = {};
         this.responseBody = undefined;
+        this.responseError = undefined;
     }
 
     resetScenarioState(responseBody?: unknown): void {
         this.dynamicMappingIds = {};
         this.pendingDynamicPortfolios = {};
         this.responseBody = responseBody;
+        this.responseError = undefined;
     }
 }
 

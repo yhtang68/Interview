@@ -46,6 +46,31 @@ Given('POST account {string} portfolio has asset:', async function (this: TestWo
     await stageDynamicPortfolio(this, accountId, { asset: assetFrom(dataTable) });
 });
 
+Given('account {string} portfolio has a malformed response', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    this.dynamicMappingIds[accountId] = await portfolioService.registerDynamicPortfolioResponse(accountId, 200, {
+        account_id: accountId,
+    });
+});
+
+Given('account {string} portfolio responds with a dependency failure', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    this.dynamicMappingIds[accountId] = await portfolioService.registerDynamicPortfolioResponse(accountId, 503, {
+        error: 'Portfolio dependency is unavailable',
+    });
+});
+
+When('GET account {string} portfolio', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    this.responseError = undefined;
+
+    try {
+        this.responseBody = await portfolioService.fetchPortfolio(accountId);
+    } catch (error) {
+        this.responseError = error instanceof Error ? error : new Error(String(error));
+    }
+});
+
 Then('GET account {string} portfolio has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
@@ -98,6 +123,14 @@ Then('GET account {string} portfolio is missing', async function (this: TestWorl
     assert(!(await portfolioService.hasPortfolio(accountId)), `Expected account "${accountId}" portfolio to be missing`);
 });
 
+Then('the account portfolio response is rejected as malformed', function (this: TestWorld) {
+    assert.match(requiredResponseError(this).message, /response payload is invalid/);
+});
+
+Then('the account portfolio dependency failure is reported', function (this: TestWorld) {
+    assert.match(requiredResponseError(this).message, /Status: 503/);
+});
+
 async function stageDynamicPortfolio(
     world: TestWorld,
     accountId: string,
@@ -144,6 +177,11 @@ function currencyNumber(value: string | undefined): number {
 
 function optionalNumber(value: string | undefined): number | undefined {
     return value === undefined || value === '' ? undefined : requiredNumber(value, 'table value');
+}
+
+function requiredResponseError(world: TestWorld): Error {
+    assert(world.responseError, 'Expected portfolio request to fail');
+    return world.responseError;
 }
 
 function assertSecurities(actualSecurities: Security[], expectedSecurities: ExpectedSecurity[]): void {
