@@ -1,5 +1,6 @@
 {
-    "account": "ABC",
+    "account_id": "abc",
+    "account_name": "ABC",
     "total_asset": 100000,
     "vested": 1.0,
     "cash_percentage": 0,

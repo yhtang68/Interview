@@ -65,6 +65,17 @@ Then('GET account {string} portfolio has asset:', async function (this: TestWorl
     assert.strictEqual(validatedAssetMetadata.stocks_percentage, expectedAsset.stocks_percentage, 'Unexpected stocks percentage');
 });
 
+Then('GET account {string} portfolio has identity:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    const portfolio = await portfolioService.fetchPortfolio(accountId);
+    const [row] = dataTable.hashes();
+    assert(row, 'Expected one portfolio identity row');
+    this.responseBody = portfolio;
+
+    assert.strictEqual(portfolio.account_id, row['Account ID'], 'Unexpected account ID');
+    assert.strictEqual(portfolio.account_name, row['Account Name'], 'Unexpected account name');
+});
+
 When('DELETE account {string} portfolio', async function (this: TestWorld, accountId: string) {
     const portfolioService = new CrdPortfolioService(this.env);
     await portfolioService.removeAccountPortfolio(accountId);

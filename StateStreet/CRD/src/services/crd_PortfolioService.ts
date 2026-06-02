@@ -27,7 +27,8 @@ export type Security = {
 };
 
 export type Portfolio = {
-    account: string;
+    account_id: string;
+    account_name: string;
     total_asset: number;
     vested?: number;
     cash_percentage?: number;
@@ -75,7 +76,8 @@ export class CrdPortfolioService {
 
     createPortfolio(accountId: string, asset: PortfolioAsset): Portfolio {
         return {
-            account: accountId.toUpperCase(),
+            account_id: accountId,
+            account_name: accountId.toUpperCase(),
             ...asset,
             securities: [],
         };
@@ -251,7 +253,8 @@ export class CrdPortfolioService {
 
         return {
             portfolio: this.withBalancedSecurities({
-                account: sourcePortfolio.account,
+                account_id: sourcePortfolio.account_id,
+                account_name: sourcePortfolio.account_name,
                 total_asset: totalAsset,
                 vested: sourcePortfolio.vested,
                 securities,
@@ -264,7 +267,8 @@ export class CrdPortfolioService {
         const assetMetadata = this.deriveAssetAllocationMetadata(portfolio);
 
         return {
-            account: portfolio.account,
+            account_id: portfolio.account_id,
+            account_name: portfolio.account_name,
             vested: portfolio.vested,
             ...assetMetadata,
             securities: portfolio.securities,
@@ -416,7 +420,8 @@ function isPortfolio(value: unknown): value is Portfolio {
     }
 
     const portfolio = value as Record<string, unknown>;
-    return typeof portfolio.account === 'string'
+    return typeof portfolio.account_id === 'string'
+        && typeof portfolio.account_name === 'string'
         && typeof portfolio.total_asset === 'number'
         && optionalNumber(portfolio.vested)
         && optionalNumber(portfolio.cash_percentage)
