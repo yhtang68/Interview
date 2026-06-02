@@ -113,8 +113,7 @@ follows the steps defined above.
 - **Baseline:** Cover the supplied account `ABC` happy path.
 - **Edge Cases:** Cover zero variance, underweight buy, overweight sell, fractional shares,
   invalid account, malformed data, unavailable dependency, and boundary cases.
-- **Non-Functional Notes:** See [PRS.test.md](../features/PRS.test.md) for
-  Performance, Reliability, Scalability, and Security coverage ideas.
+- **Non-Functional Notes:** See [PRS.test.md](../features/PRS.test.md).
 - **Review Ready:** Use Gherkin BDD and Allure Report to make interview
   discussion easier.
 
@@ -189,7 +188,7 @@ follows the steps defined above.
 
 | Rule | Requirement |
 | --- | --- |
-| **Focused Edges** | See `features/crd-account-portfolio-backlog.md`. |
+| **Focused Edges** | See `features/crd-account-portfolio-balanced-edge*.feature`. |
 
 ### 6. Verify Delivery And Review Readiness
 
@@ -213,7 +212,7 @@ follows the steps defined above.
 | Accounts collection validation | Complete | Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing, registration, normalization, deduplication, clearing, deletion, reset, and idempotency behavior. |
 | Account portfolio validation | Complete | Dedicated `crd-account-portfolio-*.feature` files validate setup, revision, deletion, reset, successful retrieval, missing portfolios, malformed responses, dependency failures, empty portfolios, and zero-value portfolios. |
 | Rebalancing output validation | Complete | The dedicated balance features validate buy, sell, no-trade, trade order, whole-share truncation, mapping updates, final holdings, asset metadata, `CRD_CASH` remainder, insufficient cash, large values, and partial vesting. |
-| Non-functional coverage notes | Complete | `features/PRS.test.md` captures Performance, Reliability, Scalability, and Security coverage ideas for the API service. |
+| Non-functional coverage notes | Complete | `features/PRS.test.md` captures PRS and Security ideas for the API service. |
 
 ## PR Review Checklist
 

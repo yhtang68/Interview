@@ -28,7 +28,8 @@ The assignment source is available in:
 
 ## Solution Design
 
-It's detailed in [WORK_SPEC.md](./docs/WORK_SPEC.md).
+See [WORK_SPEC.md](./docs/WORK_SPEC.md). PRS and Security notes are in
+[PRS.test.md](./features/PRS.test.md).
 
 ## Architecture Decision
 
@@ -111,7 +112,7 @@ The Cucumber.js infrastructure is organized as follows:
 | File | Feature |
 | --- | --- |
 | [`run-tests.ps1`](./run-tests.ps1) | - Provides the key local test-runner entry point.<br>- Accepts or prompts for an environment and optional feature selection.<br>- Validates and selects `config/env/<environment>.api.conf.js` at runtime.<br>- Prints the resolved run config and enables colored output.<br>- Launches the local Cucumber.js version through `bunx` and returns its exit code for CI. |
-| [`features/`](./features) | Contains self-documented Gherkin scenarios organized by product behavior. |
+| [`features/`](./features) | Contains product Gherkin scenarios plus PRS and Security notes. |
 | [`config/env/local.api.conf.js`](./config/env/local.api.conf.js) | - Supplies environment-specific values and calls the shared config builder.<br>- Defines the WireMock host and the CRD portfolio product URL currently served by that mock. |
 | [`config/api-test.js`](./config/api-test.js) | - Builds the shared Cucumber profile.<br>- Exposes environment values through `worldParameters`.<br>- Defines timeout and retry defaults as the suite grows.<br>- Writes JUnit XML and Allure result data.<br>- Adds test runner, runner user, environment, and timezone metadata to Allure. |
 | [`src/step_definitions/`](./src/step_definitions) | - Organizes thin step definitions by product behavior.<br>- Translates Gherkin tables into typed service calls and focused assertions.<br>- Stores response data for failure diagnostics. |
