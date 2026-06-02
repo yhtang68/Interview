@@ -170,8 +170,8 @@ Run the test suite locally:
    - Run a selected feature directly by token or path:
 
    ```powershell
-   .\run-tests.ps1 -TestEnv local crd-account-setup
-   .\run-tests.ps1 -TestEnv local features/crd-account-setup.feature
+   .\run-tests.ps1 -TestEnv local crd-account-portfolio-setup
+   .\run-tests.ps1 -TestEnv local features/crd-account-portfolio-setup.feature
    .\run-tests.ps1 -TestEnv local crd-accounts
    ```
 
