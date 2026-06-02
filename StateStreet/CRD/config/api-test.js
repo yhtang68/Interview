@@ -10,7 +10,7 @@ function features() {
         : [];
 
     const featurePaths = args.filter((arg) => !arg.startsWith('-'));
-    const hasFeaturePath = featurePaths.some((arg) => arg.endsWith('.feature') || arg.includes('*'));
+    const hasFeaturePath = featurePaths.some((arg) => /\.feature(?::\d+)?$/.test(arg) || arg.includes('*'));
     const featureGlob = (token = '') => `features/**/${token}*.feature`;
 
     if (featurePaths.length === 0) {
