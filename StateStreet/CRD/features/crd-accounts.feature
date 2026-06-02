@@ -4,7 +4,7 @@ Feature: Manage CRD accounts
     I can list and clear mocked CRD accounts
 
     # Accounts represents the Accounts[] collection of account identifiers.
-    # Account{} portfolio details are tested separately in crd-account-portfolio.feature.
+    # Account{} portfolio details are tested separately in crd-account-portfolio-*.feature.
 
     Scenario: Accounts can be cleared
         Given POST account system reset

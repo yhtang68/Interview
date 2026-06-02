@@ -187,7 +187,7 @@ follows the steps defined above.
 
 | Rule | Requirement |
 | --- | --- |
-| **Focused Edges** | See the backlog in `features/crd-account-portfolio.feature`. |
+| **Focused Edges** | See `features/crd-account-portfolio-backlog.md`. |
 
 ### 6. Verify Delivery And Review Readiness
 
@@ -208,7 +208,7 @@ follows the steps defined above.
 | CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, account-name collection listing, clearing, and reset, dynamic fixture definitions, authoritative total-asset metadata, current-value validation, payload validation, whole-share balancing, and `CRD_CASH` handling. Clearing accounts removes the collection and individual account endpoints. Reset restores the static file-backed baseline. |
 | Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and asset metadata. Dynamic setup stages asset metadata and securities by account, merges them in either order, and validates their current-value allocations before publishing the fixture. Existing dynamic accounts follow the same flow and are revised through WireMock mapping metadata. |
 | Accounts collection validation | Complete | Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing, registration, normalization, deduplication, clearing, deletion, reset, and idempotency behavior. |
-| Account portfolio validation | In progress | Setup, revision, deletion, and baseline balancing are automated. Focused `Account{}` retrieval, failure, and edge-case scenarios remain documented as backlog items in `crd-account-portfolio.feature`. |
+| Account portfolio validation | In progress | Setup, revision, deletion, and baseline balancing are automated. Focused `Account{}` retrieval, failure, and edge-case scenarios remain documented in `features/crd-account-portfolio-backlog.md`. |
 | Rebalancing output validation | In progress | The dedicated balance feature validates buy, sell, no-trade, whole-share truncation, mapping updates, final holdings, asset metadata, and the `CRD_CASH` remainder. Additional focused edge cases remain in the portfolio backlog. |
 
 ## PR Review Checklist
