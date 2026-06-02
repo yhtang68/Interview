@@ -1,6 +1,6 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 2, 2026 3:14 AM EDT
+> **Last updated:** June 2, 2026 3:31 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
@@ -89,88 +89,87 @@ follows the steps defined above.
 
 ### 1. Capture Requirements And Assumptions
 
-- Document the rebalancing formula, sign convention, vested-assets rule,
+- **Explicit Rules:** Document the rebalancing formula, sign convention, vested-assets rule,
   whole-share execution rule, and `CRD_CASH` remainder handling.
-- Confirm the trade-math flow before automating assertions.
+- **Validated Math:** Confirm the [trade-math flow](#trade-math) before automating assertions.
 
 ### 2. Define Test Coverage
 
-- Capture interview-ready test cases as readable Cucumber scenarios so the
-  coverage record and executable automation stay together.
-- The current API surface is expected to be fully automatable through the
+- **Automation First:** The current API surface is expected to be fully automatable through the
   Cucumber and WireMock infrastructure. Separate manual execution is not
   planned; the readable Gherkin scenarios remain the human-reviewable test-case
   record.
-- Cover the supplied account `ABC` happy path.
-- Cover zero variance, underweight buy, overweight sell, fractional shares,
+- **Baseline:** Cover the supplied account `ABC` happy path.
+- **Edge Cases:** Cover zero variance, underweight buy, overweight sell, fractional shares,
   invalid account, malformed data, unavailable dependency, and boundary cases.
-- Record expected results clearly enough for interview discussion.
+- **Review Ready:** Use Gherkin BDD and Allure Report to make interview
+  discussion easier.
 
 ### 3. Build The Local Mock Contract
 
-- Provide a WireMock endpoint for account portfolio data.
-- Keep the mapping and JSON fixture readable and deterministic.
-- Match the static `ABC` portfolio fixture explicitly so an account without a
-  portfolio returns `404` instead of matching a missing file-backed response.
-- Reset prior mappings to the static file-backed baseline before each test run
-  through the WireMock Admin API.
-- Retain scenario-owned dynamic mappings after the run for debugging.
-- Label scenario-owned mappings with readable metadata and update an existing
-  account mapping when a later given republishes the same account.
-- Publish the account-name collection at `/accounts` and refresh it when a
+- **Accounts Collection:** Publish the account-name collection at `/accounts` and refresh it when a
   dynamic account fixture is added.
-- Allow the mock contract to publish an account name without an individual
-  portfolio fixture. This intentionally represents an incomplete account setup
-  state for focused testing.
-- Clear static and dynamic account mappings through the CRD account service
+- **Clear Accounts:** Clear static and dynamic account mappings through the CRD account service
   when an empty account collection is required.
-- Remove individual account endpoints when clearing the collection so hidden
+- **Clear Hidden Portfolios:** Remove individual account endpoints when clearing the collection so hidden
   account fixtures cannot remain reachable by ID.
-- Reset the CRD account system to restore the static file-backed account
-  baseline after account collection changes.
-- Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature`
+- **Configurable URLs:** Make the base URL and endpoint path configurable for local execution.
+- **Debuggable State:** Retain scenario-owned dynamic mappings after the run for debugging.
+- **Deterministic Baseline:** Reset prior mappings to the static file-backed baseline before each test run
+  through the WireMock Admin API.
+- **Explicit Portfolio Match:** Match the static `ABC` portfolio fixture explicitly so an account without a
+  portfolio returns `404` instead of matching a missing file-backed response.
+- **Focused Features:** Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature`
   files and keep `Account{}` portfolio scenarios in dedicated
   `crd-account-portfolio*.feature` files.
-- Update scenario-owned mappings after derived asset-metadata refreshes and
+- **Incomplete Setup Coverage:** Allow the mock contract to publish an account name without an individual
+  portfolio fixture. This intentionally represents an incomplete account setup
+  state for focused testing.
+- **Mock Endpoint:** Provide a WireMock endpoint for account portfolio data.
+- **Published Revisions:** Update scenario-owned mappings after derived asset-metadata refreshes and
   rebalancing.
-- Make the base URL and endpoint path configurable for local execution.
+- **Readable Fixtures:** Keep the mapping and JSON fixture readable and deterministic.
+- **Restore Defaults:** Reset the CRD account system to restore the static file-backed account
+  baseline after account collection changes.
+- **Stable Dynamic Mappings:** Label scenario-owned mappings with readable metadata and update an existing
+  account mapping when a later given republishes the same account.
 
 ### 4. Automate Portfolio Input Validation
 
-- Use Cucumber feature scenarios and TypeScript step definitions.
-- Verify WireMock availability before each test run.
-- Fetch account `ABC` and validate the portfolio securities input table.
-- Preserve the account-supplied total asset value and validate each security
+- **Authoritative Asset:** Preserve the account-supplied total asset value and validate each security
   current value against its allocation percentage.
-- Stage dynamic account metadata and securities by account so either setup
+- **Baseline Input:** Fetch account `ABC` and validate the portfolio securities input table.
+- **Derived Cache:** Cache the derived cash and stocks percentages at the account level.
+- **Flexible Setup Order:** Stage dynamic account metadata and securities by account so either setup
   order merges into one validated portfolio fixture.
-- Revise an existing dynamic account through the same setup flow. WireMock
+- **Mock Health:** Verify WireMock availability before each test run.
+- **No Reverse Engineering:** Treat total asset as authoritative account metadata. Do not derive it from
+  `Unit Price` or reverse-engineer it from trade orders.
+- **Readable Automation:** Use Cucumber feature scenarios and TypeScript step definitions.
+- **Revision Flow:** Revise an existing dynamic account through the same setup flow. WireMock
   metadata identifies the account mapping so the validated fixture replaces
   the prior response without creating a duplicate.
-- Preserve vested percentage as a separate account-level input.
-- Cache the derived cash and stocks percentages at the account level.
-- Treat total asset as authoritative account metadata. Do not derive it from
-  `Unit Price` or reverse-engineer it from trade orders.
+- **Vested Input:** Preserve vested percentage as a separate account-level input.
 
 ### 5. Automate Rebalancing Output Validation
 
-- Exercise or model the application output for buy, sell, and no-trade cases.
-- Assert the whole-share trade count for every security.
-- Preserve any remaining value as the `CRD_CASH` security.
-- Allow the balance assertion table to show either the calculated columns only
+- **Flexible Assertions:** Allow the balance assertion table to show either the calculated columns only
   or the full securities contract.
-- Keep account-level vested percentage visible in scenario data so
-  partial-vesting behavior can be defined when the product contract is clear.
-- Add focused scenarios for whole-share remainder behavior and invalid inputs
+- **Focused Edges:** Add focused scenarios for whole-share remainder behavior and invalid inputs
   once the application contract is confirmed.
+- **Trade Actions:** Exercise or model the application output for buy, sell, and no-trade cases.
+- **Vested Visibility:** Keep account-level vested percentage visible in scenario data so
+  partial-vesting behavior can be defined when the product contract is clear.
+- **Visible Remainder:** Preserve any remaining value as the `CRD_CASH` security.
+- **Whole Shares:** Assert the whole-share trade count for every security.
 
 ### 6. Verify Delivery And Review Readiness
 
-- Run `bun run lint`.
-- Run `bun run build`.
-- Start WireMock with `bun run mock:start`.
-- Run the local Cucumber suite with `.\run-tests.ps1 -TestEnv local`.
-- Review the PR against this spec and call out any unimplemented items,
+- **Lint:** Run `bun run lint`.
+- **Build:** Run `bun run build`.
+- **Start Mock:** Start WireMock with `bun run mock:start`.
+- **Run Tests:** Run the local Cucumber suite with `.\run-tests.ps1 -TestEnv local`.
+- **Review Risks:** Review the PR against this spec and call out any unimplemented items,
   assumptions, and residual risks.
 
 ## Current State
