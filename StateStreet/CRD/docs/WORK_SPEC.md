@@ -1,6 +1,6 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 1, 2026 5:32 PM EDT
+> **Last updated:** June 2, 2026 3:14 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
@@ -93,8 +93,14 @@ follows the steps defined above.
   whole-share execution rule, and `CRD_CASH` remainder handling.
 - Confirm the trade-math flow before automating assertions.
 
-### 2. Define Manual Test Coverage
+### 2. Define Test Coverage
 
+- Capture interview-ready test cases as readable Cucumber scenarios so the
+  coverage record and executable automation stay together.
+- The current API surface is expected to be fully automatable through the
+  Cucumber and WireMock infrastructure. Separate manual execution is not
+  planned; the readable Gherkin scenarios remain the human-reviewable test-case
+  record.
 - Cover the supplied account `ABC` happy path.
 - Cover zero variance, underweight buy, overweight sell, fractional shares,
   invalid account, malformed data, unavailable dependency, and boundary cases.
@@ -122,8 +128,9 @@ follows the steps defined above.
   account fixtures cannot remain reachable by ID.
 - Reset the CRD account system to restore the static file-backed account
   baseline after account collection changes.
-- Keep account collection listing, clearing, and reset scenarios in a
-  dedicated `crd-accounts.feature` file.
+- Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature`
+  files and keep `Account{}` portfolio scenarios in dedicated
+  `crd-account-portfolio*.feature` files.
 - Update scenario-owned mappings after derived asset-metadata refreshes and
   rebalancing.
 - Make the base URL and endpoint path configurable for local execution.
@@ -175,13 +182,15 @@ follows the steps defined above.
 | WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service fetches mappings for CRD-owned filtering, resets mappings to the file-backed baseline before each run, finds scenario-owned dynamic mappings by readable metadata labels, updates repeated account mappings, and retains published dynamic mappings afterward for debugging. |
 | CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, account-name collection listing, clearing, and reset, dynamic fixture definitions, authoritative total-asset metadata, current-value validation, payload validation, whole-share balancing, and `CRD_CASH` handling. Clearing accounts removes the collection and individual account endpoints. Reset restores the static file-backed baseline. |
 | Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and asset metadata. Dynamic setup stages asset metadata and securities by account, merges them in either order, and validates their current-value allocations before publishing the fixture. Existing dynamic accounts follow the same flow and are revised through WireMock mapping metadata. |
-| Manual test cases | Pending | Add the interview-ready manual coverage matrix. |
-| Rebalancing output validation | Complete | A dedicated balance feature validates buy, sell, no-trade, whole-share truncation, mapping updates, final holdings, asset metadata, and the `CRD_CASH` remainder. |
+| Accounts collection validation | Complete | Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing, registration, normalization, deduplication, clearing, deletion, reset, and idempotency behavior. |
+| Account portfolio validation | In progress | Setup, revision, deletion, and baseline balancing are automated. Focused `Account{}` retrieval, failure, and edge-case scenarios remain documented as backlog items in `crd-account-portfolio.feature`. |
+| Rebalancing output validation | In progress | The dedicated balance feature validates buy, sell, no-trade, whole-share truncation, mapping updates, final holdings, asset metadata, and the `CRD_CASH` remainder. Additional focused edge cases remain in the portfolio backlog. |
 
 ## PR Review Checklist
 
 - [x] Requirements and assumptions are documented.
-- [ ] Manual test cases are included.
+- [x] Implemented test cases are captured as readable, executable Cucumber scenarios.
+- [ ] Remaining `Account{}` portfolio backlog scenarios are implemented.
 - [x] WireMock starts locally and serves the account fixture.
 - [x] Cucumber validates the supplied portfolio input.
 - [x] Automated checks validate buy, sell, and no-trade share outputs.

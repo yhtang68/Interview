@@ -4,7 +4,7 @@ Feature: Manage a CRD account portfolio
     I can verify portfolio retrieval, validation, and failure behavior
 
     # Backlog: implement these scenarios one at a time.
-    # Accounts[] collection behavior remains in crd-accounts.feature.
+    # Accounts[] collection behavior remains in the crd-accounts*.feature files.
 
     Scenario: Account portfolio can be deleted
         Given POST account system reset

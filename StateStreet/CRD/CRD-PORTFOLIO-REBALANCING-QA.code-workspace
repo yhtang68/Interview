@@ -17,6 +17,7 @@
     },
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
+    "files.eol": "\r\n",
     "eslint.enable": true,
     "eslint.validate": [
       "javascript",

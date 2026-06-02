@@ -1,6 +1,6 @@
 import { DataTable, Given, Then, When } from '@cucumber/cucumber';
 import assert from 'assert';
-import { CrdPortfolioService } from '../services/crd_PortfolioService';
+import { CrdPortfolioService, PortfolioAccounts } from '../services/crd_PortfolioService';
 import { TestWorld } from '../support/world';
 
 Given('POST account system reset', async function (this: TestWorld) {
@@ -29,9 +29,7 @@ When('POST clear accounts', async function (this: TestWorld) {
 });
 
 Then('GET accounts has:', async function (this: TestWorld, dataTable: DataTable) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
-    this.responseBody = portfolioAccounts;
+    const portfolioAccounts = await fetchPortfolioAccounts(this);
 
     dataTable.hashes().map((row) => row.Account).forEach((expectedAccount) => {
         assert(
@@ -42,17 +40,21 @@ Then('GET accounts has:', async function (this: TestWorld, dataTable: DataTable)
 });
 
 Then('GET accounts is:', async function (this: TestWorld, dataTable: DataTable) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
-    this.responseBody = portfolioAccounts;
+    const portfolioAccounts = await fetchPortfolioAccounts(this);
 
     assert.deepStrictEqual(portfolioAccounts.accounts, dataTable.hashes().map((row) => row.Account));
 });
 
 Then('GET accounts is empty', async function (this: TestWorld) {
-    const portfolioService = new CrdPortfolioService(this.env);
-    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
-    this.responseBody = portfolioAccounts;
+    const portfolioAccounts = await fetchPortfolioAccounts(this);
 
     assert.deepStrictEqual(portfolioAccounts.accounts, []);
 });
+
+async function fetchPortfolioAccounts(world: TestWorld): Promise<PortfolioAccounts> {
+    const portfolioService = new CrdPortfolioService(world.env);
+    const portfolioAccounts = await portfolioService.fetchPortfolioAccounts();
+    world.responseBody = portfolioAccounts;
+
+    return portfolioAccounts;
+}
