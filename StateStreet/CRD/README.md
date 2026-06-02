@@ -146,6 +146,18 @@ bun run build
 - `build` runs `tsc --noEmit` to type-check the TypeScript code without
   generating JavaScript output.
 
+## Line Endings
+
+This project uses `.gitattributes` with `* text=auto`.
+
+- Git normalizes text files in the index so LF/CRLF differences do not become
+  source diffs.
+- VS Code is configured with `files.eol` set to LF in both the workspace file
+  and folder settings for manual edits on Windows.
+- Windows, macOS, and Linux contributors can use their normal editor and Git
+  checkout settings.
+- Avoid mass-normalizing line endings unless the Git attributes policy changes.
+
 ## Test Run
 
 Run the test suite locally:
