@@ -4,7 +4,7 @@ import { CrdPortfolioService, SecurityTrade } from '../services/crd_PortfolioSer
 import { TestWorld } from '../support/world';
 import { requiredNumber } from './helpers/dataTableHelpers';
 
-When('POST portfolio account {string} has the securities balanced:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+When('POST account {string} portfolio has the securities balanced:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
     const balanced = portfolioService.balancePortfolio(portfolio);
@@ -22,7 +22,7 @@ When('POST portfolio account {string} has the securities balanced:', async funct
     });
 
     const mappingId = this.dynamicMappingIds[accountId];
-    assert(mappingId, `Dynamic WireMock mapping is missing for portfolio account ${accountId}`);
+    assert(mappingId, `Dynamic WireMock mapping is missing for account ${accountId} portfolio`);
 
     await portfolioService.updateDynamicPortfolio(accountId, mappingId, balanced.portfolio);
     this.responseBody = balanced.portfolio;

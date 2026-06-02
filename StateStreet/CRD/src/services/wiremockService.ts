@@ -65,6 +65,7 @@ export async function upsertWireMockMapping(config: WireMockAdminConfig, mapping
         throw new Error('Replacing a WireMock mapping requires a metadata mappingKey');
     }
 
+    // Revisions replace an existing dynamic mock by its stable metadata key.
     const matchingIds = (await findWireMockMappingsByMetadata(config, mappingKey))
         .map((existingMapping) => existingMapping.id)
         .filter((mappingId): mappingId is string => typeof mappingId === 'string');

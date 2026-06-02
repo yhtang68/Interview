@@ -37,7 +37,6 @@ function getCucumberConfig(envConfig) {
     return {
         requireModule: ['ts-node/register'],
         backtrace: true,
-        tags: 'not @pending',
         worldParameters: { env },
         require: [
             'src/step_definitions/**/*.ts',

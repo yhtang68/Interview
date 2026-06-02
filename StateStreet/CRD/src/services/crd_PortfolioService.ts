@@ -158,6 +158,16 @@ export class CrdPortfolioService {
         await upsertWireMockMapping(this.config, this.portfolioAccountsMapping({ accounts }));
     }
 
+    async removeAccountPortfolio(accountId: string): Promise<void> {
+        const mappings = await fetchWireMockMappings(this.config);
+        const portfolioMappings = mappings.filter((mapping) => this.isAccountPortfolioMapping(mapping, accountId));
+
+        await Promise.all(portfolioMappings.map((mapping) => {
+            assert(mapping.id, 'Account portfolio WireMock mapping ID is missing');
+            return removeWireMockMapping(this.config, mapping.id);
+        }));
+    }
+
     async resetPortfolioAccountSystem(): Promise<void> {
         // Restores static file-backed mappings, including the default ABC account and portfolio.
         await resetWireMockMappings(this.config);
@@ -372,6 +382,10 @@ export class CrdPortfolioService {
             || requestPath === `${accountsPath}/`
             || requestPath === `${accountsPath}/?`
             || requestPath?.startsWith(`${accountsPath}/`) === true;
+    }
+
+    private isAccountPortfolioMapping(mapping: RegisteredWireMockMapping, accountId: string): boolean {
+        return mapping.request.urlPath?.toLowerCase() === this.api.accounts.account(accountId).path.toLowerCase();
     }
 
     private apiUrl(api: string): string {

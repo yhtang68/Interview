@@ -1,5 +1,6 @@
-import { DataTable, Given, Then } from '@cucumber/cucumber';
+import { DataTable, Given, Then, When } from '@cucumber/cucumber';
 import assert from 'assert';
+
 import {
     CrdPortfolioService,
     PortfolioAsset,
@@ -11,7 +12,7 @@ import { requiredNumber } from './helpers/dataTableHelpers';
 
 type ExpectedSecurity = Partial<Omit<Security, 'security'>> & Pick<Security, 'security'>;
 
-Given('GET portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+Given('GET account {string} portfolio has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
     this.responseBody = portfolio;
@@ -28,7 +29,7 @@ Given('GET portfolio account {string} has the securities:', async function (this
     assertSecurities(portfolio.securities, expectedSecurities);
 });
 
-Given('POST portfolio account {string} has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+Given('POST account {string} portfolio has the securities:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     await stageDynamicPortfolio(this, accountId, {
         securities: dataTable.hashes().map((row) => ({
             security: row.Security,
@@ -41,11 +42,11 @@ Given('POST portfolio account {string} has the securities:', async function (thi
     });
 });
 
-Given('POST portfolio account {string} has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+Given('POST account {string} portfolio has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     await stageDynamicPortfolio(this, accountId, { asset: assetFrom(dataTable) });
 });
 
-Then('GET portfolio account {string} has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
+Then('GET account {string} portfolio has asset:', async function (this: TestWorld, accountId: string, dataTable: DataTable) {
     const portfolioService = new CrdPortfolioService(this.env);
     const portfolio = await portfolioService.fetchPortfolio(accountId);
     const validatedAssetMetadata = portfolioService.validatePortfolioAssetMetadata(portfolio);
@@ -53,15 +54,37 @@ Then('GET portfolio account {string} has asset:', async function (this: TestWorl
     this.responseBody = portfolio;
 
     if (portfolioService.hasCompleteAssetMetadata(portfolio)) {
-        log(`Portfolio account ${accountId} asset metadata matches the securities allocation.`);
+        log(`Account ${accountId} portfolio asset metadata matches the securities allocation.`);
     } else {
-        log(`Portfolio account ${accountId} derived asset metadata is missing; derived allocation percentages from securities. Patch the fixture metadata.`, 'warning');
+        log(`Account ${accountId} portfolio derived asset metadata is missing; derived allocation percentages from securities. Patch the fixture metadata.`, 'warning');
     }
 
     assert.strictEqual(validatedAssetMetadata.total_asset, expectedAsset.total_asset, 'Unexpected total asset');
     assert.strictEqual(validatedAssetMetadata.vested, expectedAsset.vested, 'Unexpected vested percentage');
     assert.strictEqual(validatedAssetMetadata.cash_percentage, expectedAsset.cash_percentage, 'Unexpected cash percentage');
     assert.strictEqual(validatedAssetMetadata.stocks_percentage, expectedAsset.stocks_percentage, 'Unexpected stocks percentage');
+});
+
+When('DELETE account {string} portfolio', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    await portfolioService.removeAccountPortfolio(accountId);
+
+    for (const key of Object.keys(this.dynamicMappingIds)) {
+        if (key.toLowerCase() === accountId.toLowerCase()) {
+            delete this.dynamicMappingIds[key];
+        }
+    }
+
+    for (const key of Object.keys(this.pendingDynamicPortfolios)) {
+        if (key.toLowerCase() === accountId.toLowerCase()) {
+            delete this.pendingDynamicPortfolios[key];
+        }
+    }
+});
+
+Then('GET account {string} portfolio is missing', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    assert(!(await portfolioService.hasPortfolio(accountId)), `Expected account "${accountId}" portfolio to be missing`);
 });
 
 async function stageDynamicPortfolio(
@@ -76,7 +99,7 @@ async function stageDynamicPortfolio(
     world.pendingDynamicPortfolios[accountId] = pendingPortfolio;
 
     if (!pendingPortfolio.asset || !pendingPortfolio.securities) {
-        log(`Portfolio account ${accountId} setup fragment staged; waiting for matching asset metadata and securities.`);
+        log(`Account ${accountId} portfolio setup fragment staged; waiting for matching asset metadata and securities.`);
         return;
     }
 
@@ -89,7 +112,7 @@ async function stageDynamicPortfolio(
     world.dynamicMappingIds[accountId] = await portfolioService.registerDynamicPortfolio(accountId, portfolio);
     delete world.pendingDynamicPortfolios[accountId];
     world.responseBody = portfolio;
-    log(`Portfolio account ${accountId} asset metadata and securities merged, validated, and published.`);
+    log(`Account ${accountId} portfolio asset metadata and securities merged, validated, and published.`);
 }
 
 function assetFrom(dataTable: DataTable): PortfolioAsset {

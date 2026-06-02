@@ -36,7 +36,7 @@ Then('GET accounts has:', async function (this: TestWorld, dataTable: DataTable)
     dataTable.hashes().map((row) => row.Account).forEach((expectedAccount) => {
         assert(
             portfolioAccounts.accounts.includes(expectedAccount),
-            `Expected portfolio account ${expectedAccount} not found in response`,
+            `Expected account ${expectedAccount} not found in response`,
         );
     });
 });
