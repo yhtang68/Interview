@@ -1,0 +1,14 @@
+{
+  "priority": 80,
+  "request": {
+    "urlPathPattern": "/state-street/crd/portfolioService/accounts/?",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "portfolioService/accounts.json"
+  }
+}

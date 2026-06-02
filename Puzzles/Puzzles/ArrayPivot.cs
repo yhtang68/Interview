@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Puzzles
 {
-    class ArraryPivot
+    class ArrayPivot
     {
         public int GetPivotIndex(int[] intArray)
         {

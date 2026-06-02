@@ -1,0 +1,11 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# User-specific IDE files
+*.user
+*.suo
+.vs/
+
+# Local PR draft
+**/PR.md

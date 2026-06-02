@@ -10,10 +10,10 @@ namespace Puzzles
     {
         static void Main(string[] args)
         {
-            var quiz = new ArraryPivot();
+            var pivot = new ArrayPivot();
             var array = new int[]{ 1, 8, 4, 3, 2 };
 
-            Console.WriteLine("GetPivotIndex(array): "+ quiz.GetPivotIndex(array));
+            Console.WriteLine("GetPivotIndex(array): "+ pivot.GetPivotIndex(array));
             Console.ReadLine();
         }
     }

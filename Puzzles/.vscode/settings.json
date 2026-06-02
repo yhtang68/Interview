@@ -1,0 +1,7 @@
+{
+    "dotnet.preferCSharpExtension": true,
+    "dotnet.server.environmentVariables": {
+        "DOTNET_CLI_UI_LANGUAGE": "en"
+    },
+    "files.encoding": "utf8"
+}

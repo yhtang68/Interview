@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Puzzles
 {
-    class ArraryProducts
+    class ArrayProduct
     {
         public int[] GetProductsOfAllIntsExceptAtIndex(int[] intArray)
         {
