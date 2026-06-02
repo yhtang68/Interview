@@ -33,7 +33,10 @@ Feature: Set up CRD account portfolio test data
             | $10000      | 100      | 0      | 100      |
 
         # Verify the new account portfolio.
-        Then GET account "abc-2" portfolio has the securities:
+        Then GET account "abc-2" portfolio has identity:
+            | Account ID | Account Name |
+            | abc-2      | ABC-2        |
+        And GET account "abc-2" portfolio has the securities:
             | Security | Target % | Current % | Current Value | Target Variance % | Unit Price |
             | IBM      | 50       | 40        | 4000          | -10               | 100        |
             | MSFT     | 50       | 60        | 6000          | 10                | 200        |

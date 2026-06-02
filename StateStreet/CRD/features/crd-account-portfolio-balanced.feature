@@ -4,7 +4,7 @@ Feature: Balance CRD account portfolio securities
     I can verify whole-share trades and the remaining cash allocation
 
     Scenario: Account portfolio is balanced with whole-share trades and remaining cash
-        # Implementation detail: Dynamic portfolio mock balances the securities data
+        # Set the initial account portfolio.
         Given POST account "abc-1" portfolio has asset:
             | Total Asset | Vested % | Cash % | Stocks % |
             | $100000     | 100      | 0      | 100      |
@@ -15,6 +15,8 @@ Feature: Balance CRD account portfolio securities
             | ORCL     | 20       | 20        | 20000         | 0                 | 250        |
             | AAPL     | 20       | 10        | 10000         | -10               | 500        |
             | HD       | 20       | 30        | 30000         | 10                | 50         |
+
+        # Balance the account portfolio with whole-share trades.
         When POST account "abc-1" portfolio has the securities balanced:
             | Security | Action   | Shares | Unit Price |
             | IBM      | Buy      | 16     | 300        |
@@ -22,7 +24,12 @@ Feature: Balance CRD account portfolio securities
             | ORCL     | No trade | 0      | 250        |
             | AAPL     | Buy      | 20     | 500        |
             | HD       | Sell     | 200    | 50         |
-        Then GET account "abc-1" portfolio has the securities:
+
+        # Verify the balanced account portfolio and remaining cash.
+        Then GET account "abc-1" portfolio has identity:
+            | Account ID | Account Name |
+            | abc-1      | ABC-1        |
+        And GET account "abc-1" portfolio has the securities:
             | Security | Target % | Current % | Current Value | Target Variance % | Unit Price |
             | IBM      | 20       | 19.8      | 19800         | -0.2              | 300        |
             | MSFT     | 20       | 20        | 20000         | 0                 | 100        |
