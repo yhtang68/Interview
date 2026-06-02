@@ -27,7 +27,7 @@ export type CrdPortfolioServiceConfig = WireMockAdminConfig & {
     };
 };
 
-export type { Portfolio, PortfolioAccounts, PortfolioAsset, Security, SecurityTrade } from './crd_PortfolioModel';
+export type { Portfolio, PortfolioAccounts, PortfolioAsset, Security, SecurityTrade, TradeAction } from './crd_PortfolioModel';
 
 export class CrdPortfolioService {
     private readonly model = new CrdPortfolioModel();

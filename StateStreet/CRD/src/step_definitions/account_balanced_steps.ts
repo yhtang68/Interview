@@ -1,6 +1,6 @@
-import { DataTable, When } from '@cucumber/cucumber';
+import { DataTable, Then, When } from '@cucumber/cucumber';
 import assert from 'assert';
-import { CrdPortfolioService, SecurityTrade } from '../services/crd_PortfolioService';
+import { CrdPortfolioService, SecurityTrade, TradeAction } from '../services/crd_PortfolioService';
 import { TestWorld } from '../support/world';
 import { requiredNumber } from './helpers/dataTableHelpers';
 
@@ -10,7 +10,7 @@ When('POST account {string} portfolio has the securities balanced:', async funct
     const balanced = portfolioService.balancePortfolio(portfolio);
     const expectedTrades: SecurityTrade[] = dataTable.hashes().map((row) => ({
         security: row.Security,
-        action: row.Action,
+        action: requiredTradeAction(row.Action),
         shares: requiredNumber(row.Shares, 'Shares'),
         unit_price: requiredNumber(row['Unit Price'], 'Unit Price'),
     }));
@@ -27,3 +27,24 @@ When('POST account {string} portfolio has the securities balanced:', async funct
     await portfolioService.updateDynamicPortfolio(accountId, mappingId, balanced.portfolio);
     this.responseBody = balanced.portfolio;
 });
+
+When('POST account {string} portfolio balanced', async function (this: TestWorld, accountId: string) {
+    const portfolioService = new CrdPortfolioService(this.env);
+    this.responseError = undefined;
+
+    try {
+        portfolioService.balancePortfolio(await portfolioService.fetchPortfolio(accountId));
+    } catch (error) {
+        this.responseError = error instanceof Error ? error : new Error(String(error));
+    }
+});
+
+Then('the account portfolio insufficient cash error is reported', function (this: TestWorld) {
+    assert(this.responseError, 'Expected portfolio rebalance to fail');
+    assert.match(this.responseError.message, /requires .* additional cash/);
+});
+
+function requiredTradeAction(value: string): TradeAction {
+    assert(value === 'Buy' || value === 'Sell' || value === 'No trade', `Unexpected trade action: ${value}`);
+    return value;
+}

@@ -39,10 +39,12 @@ export type PortfolioAccounts = {
 
 export type SecurityTrade = {
     security: string;
-    action: string;
+    action: TradeAction;
     shares: number;
     unit_price: number;
 };
+
+export type TradeAction = 'Buy' | 'Sell' | 'No trade';
 
 const cashSecurity = 'CRD_CASH';
 
@@ -102,29 +104,45 @@ export class CrdPortfolioModel {
         const totalAsset = new Decimal(sourcePortfolio.total_asset);
         let cashValue = this.cashValue(sourcePortfolio.securities);
         const trades: SecurityTrade[] = [];
+        const vested = new Decimal(sourcePortfolio.vested ?? 1);
+        assert(vested.greaterThanOrEqualTo(0) && vested.lessThanOrEqualTo(1), 'Portfolio vested percentage must be between 0 and 1');
 
+        // Sell first so proceeds fund buys. Within each action, trade the highest-priced stocks first.
         const securities = sourcePortfolio.securities
             .filter((security) => security.security !== cashSecurity)
             .map((security) => {
                 const targetValue = totalAsset.mul(security.target_percentage).div(100);
                 const currentValue = this.securityValue(security);
                 const valueDifference = targetValue.minus(currentValue);
-                const shares = valueDifference.abs().div(security.unit_price).trunc().toNumber();
-                const action = valueDifference.greaterThan(0) ? 'Buy' : valueDifference.lessThan(0) ? 'Sell' : 'No trade';
+                const action: TradeAction = valueDifference.greaterThan(0) ? 'Buy' : valueDifference.lessThan(0) ? 'Sell' : 'No trade';
+
+                return { security, currentValue, valueDifference, action };
+            })
+            .sort((left, right) => {
+                const actionOrder = { Sell: 0, 'No trade': 1, Buy: 2 };
+                return actionOrder[left.action] - actionOrder[right.action]
+                    || new Decimal(right.security.unit_price).comparedTo(left.security.unit_price);
+            })
+            .map(({ security, currentValue, valueDifference, action: requiredAction }) => {
+                const unitPrice = new Decimal(security.unit_price);
+                assert(unitPrice.greaterThan(0), `${security.security} unit_price must be positive`);
+                const shares = valueDifference.abs().mul(vested).div(unitPrice).trunc().toNumber();
+                assert(Number.isSafeInteger(shares), `${security.security} trade share count exceeds safe integer range`);
+                const action: TradeAction = shares === 0 ? 'No trade' : requiredAction;
                 const signedShares = action === 'Buy' ? shares : action === 'Sell' ? -shares : 0;
 
-                cashValue = cashValue.minus(new Decimal(security.unit_price).mul(signedShares));
+                cashValue = cashValue.minus(unitPrice.mul(signedShares));
                 trades.push({ security: security.security, action, shares, unit_price: security.unit_price });
 
                 return {
                     ...security,
-                    current_value: currentValue.plus(new Decimal(security.unit_price).mul(signedShares)).toNumber(),
+                    current_value: currentValue.plus(unitPrice.mul(signedShares)).toNumber(),
                 };
             });
 
-        assert(cashValue.isPositive() || cashValue.isZero(), `Portfolio rebalance requires ${cashValue.abs()} additional cash`);
+        assert(cashValue.greaterThanOrEqualTo(0), `Portfolio rebalance requires ${cashValue.abs()} additional cash`);
 
-        if (cashValue.isPositive()) {
+        if (cashValue.greaterThan(0)) {
             securities.push({
                 security: cashSecurity,
                 current_value: round(cashValue),
