@@ -13,6 +13,7 @@ Feature: Reset CRD accounts
 
     Scenario: Account system reset is idempotent
         Given POST account system reset
+
         When POST account system reset
         Then GET accounts is:
             | Account |
@@ -24,6 +25,7 @@ Feature: Reset CRD accounts
             | Account |
             | abc-1   |
             | abc-2   |
+
         When POST account system reset
         Then GET accounts is:
             | Account |
@@ -32,6 +34,7 @@ Feature: Reset CRD accounts
     Scenario: Account system reset restores cleared default accounts
         Given POST account system reset
         And POST clear accounts
+
         When POST account system reset
         Then GET accounts is:
             | Account |

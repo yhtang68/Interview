@@ -18,12 +18,14 @@ Feature: Manage CRD accounts
             | ABC     |
             | ABC-1   |
             | ABC-2   |
+
         When POST clear accounts
         Then GET accounts is empty
 
     Scenario: Accounts can be listed
         Given POST account system reset
         # [System reset] loads the default account: ABC
+
         When POST accounts:
             | Account |
             | abc-1   |
@@ -39,5 +41,6 @@ Feature: Manage CRD accounts
     Scenario: Clearing accounts is idempotent
         Given POST account system reset
         And POST clear accounts
+
         When POST clear accounts
         Then GET accounts is empty

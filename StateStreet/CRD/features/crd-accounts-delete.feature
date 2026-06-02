@@ -7,6 +7,7 @@ Feature: Delete CRD accounts
 
     Scenario: A last remaining account can be deleted
         Given POST account system reset
+
         When DELETE account "abc"
         Then GET accounts is empty
 
@@ -16,6 +17,7 @@ Feature: Delete CRD accounts
             | Account |
             | abc-1   |
             | abc-2   |
+
         When DELETE account "abc-1"
         Then GET accounts is:
             | Account |
@@ -29,6 +31,7 @@ Feature: Delete CRD accounts
             | abc-1   |
             | abc-2   |
         And DELETE account "abc-1"
+
         When DELETE account "abc-1"
         Then GET accounts is:
             | Account |

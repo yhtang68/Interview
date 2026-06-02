@@ -8,6 +8,7 @@ Feature: Add CRD accounts
     Scenario: Accounts can be registered after accounts are cleared
         Given POST account system reset
         And POST clear accounts
+
         When POST accounts:
             | Account |
             | abc-new |
@@ -22,6 +23,7 @@ Feature: Add CRD accounts
             | Account |
             | abc-1   |
         And POST clear accounts
+
         When POST accounts:
             | Account |
             | abc-2   |
@@ -31,6 +33,7 @@ Feature: Add CRD accounts
 
     Scenario: Duplicate account registrations do not collide
         Given POST account system reset
+
         When POST accounts:
             | Account |
             | ABC     |
@@ -44,6 +47,7 @@ Feature: Add CRD accounts
 
     Scenario: Registered accounts are uppercased and sorted
         Given POST account system reset
+
         When POST accounts:
             | Account |
             | abc-2   |
