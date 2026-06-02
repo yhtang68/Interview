@@ -9,6 +9,7 @@ state, see [WORK_SPEC.md](./docs/WORK_SPEC.md).
 ## Table Of Contents
 
 - [Assignment](#assignment)
+- [Solution Design](#solution-design)
 - [Architecture Decision](#architecture-decision)
 - [Tech Stack](#tech-stack)
 - [Install](#install)
@@ -24,6 +25,10 @@ The assignment source is available in:
 - [North American - Technical Assessment QA.md](./docs/North%20American%20-%20Technical%20Assessment%20QA.md)
 - [North American - Technical Assessment QA.docx](./docs/North%20American%20-%20Technical%20Assessment%20QA.docx)
 - [North American - Technical Assessment QA.pdf](./docs/North%20American%20-%20Technical%20Assessment%20QA.pdf)
+
+## Solution Design
+
+It's detailed in [WORK_SPEC.md](./docs/WORK_SPEC.md).
 
 ## Architecture Decision
 

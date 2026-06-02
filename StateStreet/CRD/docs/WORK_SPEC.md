@@ -1,12 +1,23 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 2, 2026 3:31 AM EDT
+> **Last updated:** June 2, 2026 8:48 AM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
 
 `README.md` remains the test architecture and execution guide. The Gherkin
 feature files remain the self-documented source for scenario behavior.
+
+## Table Of Contents
+
+- [Assignment Reference](#assignment-reference)
+- [Assessment Goal](#assessment-goal)
+- [Solution Overview](#solution-overview)
+- [Assumptions](#assumptions)
+- [Trade Math](#trade-math)
+- [Six-Step Delivery Plan](#six-step-delivery-plan)
+- [Current State](#current-state)
+- [PR Review Checklist](#pr-review-checklist)
 
 ## Assignment Reference
 
@@ -41,7 +52,7 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
 | --- | --- |
 | **Action** | - **Buy / Sell** whole **Shares** of the security to meet the **Target %**.<br>- **No Trade** when the security is already at its **Target %**. |
 | **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is authoritative account metadata. It is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
-| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Balance Flow:**<br>&nbsp;&nbsp;- **Overweight Stock:** Sell whole shares and move the executed trade value into **CRD_CASH**. Any unsellable remainder stays in the stock.<br>&nbsp;&nbsp;- **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent remainder stays in **CRD_CASH**.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
+| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>- **Balance Flow:**<br>&nbsp;&nbsp;- **Trade Order:** Process **Sell** actions before **Buy** actions. Within each action, process stocks from the highest **Unit Price** to the lowest.<br>&nbsp;&nbsp;- **Overweight Stock:** Sell whole shares and move the executed trade value into **CRD_CASH**. Any unsellable remainder stays in the stock.<br>&nbsp;&nbsp;- **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent remainder stays in **CRD_CASH**.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
 | **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- **Unit Price** is the agreed trade price used by **Balanced** processing.<br>&nbsp;&nbsp;- Do not use **Unit Price** to reverse-engineer existing shares. |
 
 ## Trade Math
@@ -107,61 +118,77 @@ follows the steps defined above.
 
 ### 3. Build The Local Mock Contract
 
-- **Accounts Collection:** Publish the account-name collection at `/accounts` and refresh it when a
-  dynamic account fixture is added.
-- **Clear Accounts:** Clear static and dynamic account mappings through the CRD account service
-  when an empty account collection is required.
-- **Clear Hidden Portfolios:** Remove individual account endpoints when clearing the collection so hidden
-  account fixtures cannot remain reachable by ID.
-- **Configurable URLs:** Make the base URL and endpoint path configurable for local execution.
-- **Debuggable State:** Retain scenario-owned dynamic mappings after the run for debugging.
-- **Deterministic Baseline:** Reset prior mappings to the static file-backed baseline before each test run
-  through the WireMock Admin API.
-- **Explicit Portfolio Match:** Match the static `ABC` portfolio fixture explicitly so an account without a
-  portfolio returns `404` instead of matching a missing file-backed response.
-- **Focused Features:** Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature`
-  files and keep `Account{}` portfolio scenarios in dedicated
-  `crd-account-portfolio*.feature` files.
-- **Incomplete Setup Coverage:** Allow the mock contract to publish an account name without an individual
-  portfolio fixture. This intentionally represents an incomplete account setup
-  state for focused testing.
-- **Mock Endpoint:** Provide a WireMock endpoint for account portfolio data.
-- **Published Revisions:** Update scenario-owned mappings after derived asset-metadata refreshes and
-  rebalancing.
-- **Readable Fixtures:** Keep the mapping and JSON fixture readable and deterministic.
-- **Restore Defaults:** Reset the CRD account system to restore the static file-backed account
-  baseline after account collection changes.
-- **Stable Dynamic Mappings:** Label scenario-owned mappings with readable metadata and update an existing
-  account mapping when a later given republishes the same account.
+#### **- WireMock -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Configurable URLs** | For example, configure local URLs in `config/env/local.api.conf.js`. |
+| **Debuggable State** | Retain scenario-owned dynamic mappings after the test run for debugging. |
+| **Deterministic Baseline** | Reset mappings to static file-backed before each test run. |
+| **Readable Fixtures** | Keep `wiremock/mappings` and `wiremock/__files` readable and deterministic. |
+
+#### **- Accounts[] -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Features** | Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature` files. |
+
+#### **- Account {} - Portfolio -**
+
+| Rule | Requirement |
+| --- | --- |
+| **DELETE Portfolio** | Deleting an account from `Accounts[]` also removes its `Account {}` portfolio. |
+| **GET Portfolio** | Match the static `ABC` portfolio fixture explicitly.<br>For example, `GET http://localhost:9999/accounts/abc-empty` returns `404` when `ABC-EMPTY` exists in `Accounts[]` but has no `Account {}` portfolio. |
+| **Features** | Keep `Account {}` portfolio scenarios in dedicated `crd-account-portfolio*.feature` files. |
+| **Mock Endpoint** | A WireMock endpoint, for example `GET http://localhost:9999/accounts/abc`. |
 
 ### 4. Automate Portfolio Input Validation
 
-- **Authoritative Asset:** Preserve the account-supplied total asset value and validate each security
-  current value against its allocation percentage.
-- **Baseline Input:** Fetch account `ABC` and validate the portfolio securities input table.
-- **Derived Cache:** Cache the derived cash and stocks percentages at the account level.
-- **Flexible Setup Order:** Stage dynamic account metadata and securities by account so either setup
-  order merges into one validated portfolio fixture.
-- **Mock Health:** Verify WireMock availability before each test run.
-- **No Reverse Engineering:** Treat total asset as authoritative account metadata. Do not derive it from
-  `Unit Price` or reverse-engineer it from trade orders.
-- **Readable Automation:** Use Cucumber feature scenarios and TypeScript step definitions.
-- **Revision Flow:** Revise an existing dynamic account through the same setup flow. WireMock
-  metadata identifies the account mapping so the validated fixture replaces
-  the prior response without creating a duplicate.
-- **Vested Input:** Preserve vested percentage as a separate account-level input.
+#### **- WireMock -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Mock Health** | Verify WireMock availability before each test run. |
+
+#### **- Account {} - Portfolio Input -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Authoritative Asset** | Preserve the account-supplied total asset value and validate each security current value against its allocation percentage. |
+| **Derived Cache** | Cache the derived cash and stocks percentages at the account level. |
+| **Flexible Setup Order** | Stage dynamic account metadata and securities by account so either setup order merges into one validated portfolio fixture. |
+| **No Reverse Engineering** | Treat total asset as authoritative account metadata. Do not derive it from `Unit Price` or reverse-engineer it from trade orders. |
+| **Revision Flow** | Revise an existing dynamic account through the same setup flow. WireMock metadata identifies the account mapping so the validated fixture replaces the prior response without creating a duplicate. |
+| **Vested Input** | Preserve vested percentage as a separate account-level input. |
+
+#### **- Cucumber -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Readable Automation** | Use Cucumber feature scenarios and TypeScript step definitions. |
 
 ### 5. Automate Rebalancing Output Validation
 
-- **Flexible Assertions:** Allow the balance assertion table to show either the calculated columns only
-  or the full securities contract.
-- **Focused Edges:** Add focused scenarios for whole-share remainder behavior and invalid inputs
-  once the application contract is confirmed.
-- **Trade Actions:** Exercise or model the application output for buy, sell, and no-trade cases.
-- **Vested Visibility:** Keep account-level vested percentage visible in scenario data so
-  partial-vesting behavior can be defined when the product contract is clear.
-- **Visible Remainder:** Preserve any remaining value as the `CRD_CASH` security.
-- **Whole Shares:** Assert the whole-share trade count for every security.
+#### **- Account {} - Portfolio Output -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Vested Visibility** | Keep account-level vested percentage visible in scenario data so partial-vesting behavior can be defined when the product contract is clear. |
+| **Visible Remainder** | Preserve any remaining value as the `CRD_CASH` security. |
+
+#### **- Security {} - Trade Validation -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Flexible Assertions** | Allow the balance assertion table to show either the calculated columns only or the full securities contract. |
+| **Trade Actions** | Exercise or model the application output for buy, sell, and no-trade cases. |
+| **Whole Shares** | Assert the whole-share trade count for every security. |
+
+#### **- Test Coverage -**
+
+| Rule | Requirement |
+| --- | --- |
+| **Focused Edges** | Add focused scenarios for whole-share remainder behavior and invalid inputs once the application contract is confirmed. |
 
 ### 6. Verify Delivery And Review Readiness
 
