@@ -101,6 +101,13 @@ java --version
 bunx cucumber-js --version
 ```
 
+To start from a clean dependency install:
+
+```powershell
+bun run del:packages
+npm install
+```
+
 ## Cucumber.js
 
 Test execution starts with `.\run-tests.ps1`. The runner invokes
@@ -193,6 +200,7 @@ Run the test suite locally:
    ```powershell
    .\run-tests.ps1 -TestEnv local crd-account-portfolio-setup
    .\run-tests.ps1 -TestEnv local features/crd-account-portfolio-setup.feature
+   .\run-tests.ps1 -TestEnv local features/crd-accounts.feature:25
    .\run-tests.ps1 -TestEnv local crd-accounts
    ```
 

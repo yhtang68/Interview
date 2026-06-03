@@ -1,12 +1,13 @@
 # Portfolio Rebalancing QA Solution Overview
 
-> **Last updated:** June 2, 2026 5:12 PM EDT
+> **Last updated:** June 2, 2026 8:32 PM EDT
 
 This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
 
-`README.md` remains the test architecture and execution guide. The Gherkin
-feature files remain the self-documented source for scenario behavior.
+[`README.md`](../README.md) remains the test architecture and execution guide.
+The Gherkin feature files remain the self-documented source for scenario
+behavior.
 
 ## Table Of Contents
 
@@ -48,12 +49,62 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
 
 ## Assumptions
 
-| Term | Decision |
-| --- | --- |
-| **Action** | - **Buy / Sell** whole **Shares** of the security to meet the **Target %**.<br>- **No Trade** when the security is already at its **Target %**. |
-| **Asset** | - A portfolio of **Security** holdings valued in dollars.<br>- Scaled by **Balanced** processing.<br>- **Total Asset** is authoritative account metadata. It is the total dollar value of **Security** in the book, including **CRD_CASH**.<br>- **Vested %** is the account-level percentage available for rebalancing trades.<br>&nbsp;&nbsp;For example, `$1,000` in total assets and `80%` vested means `$800` is available for trading. |
-| **Balanced** | - **Action:** A portfolio is balanced by applying an action to each security.<br>- **Current %:** The percentage of **Total Asset** in dollars currently allocated to a security.<br>- **Current Value:** `[Current Value] = [Total Asset] * [Current %]`<br>- **Target %:** The **Asset** percentage targeted after balancing.<br>- **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`<br>- **Shares:** Decimal shares are not accepted because rounding can silently lose portfolio value.<br>&nbsp;&nbsp;- Use decimal arithmetic for money, prices, and percentages.<br>&nbsp;&nbsp;- Multiply each desired trade value by **Vested %** before truncating to whole shares.<br>&nbsp;&nbsp;- Truncate `[Trade Value] / [Unit Price]` into an integer share count.<br>&nbsp;&nbsp;- Keep the integer share count within JavaScript's safe-integer range.<br>&nbsp;&nbsp;- For example, `$100 billion / $0.01 = 10 trillion` shares, which remains below the safe-integer limit.<br>- **Balance Flow:**<br>&nbsp;&nbsp;- **Trade Order:** Process **Sell** actions before **Buy** actions. Within each action, process stocks from the highest **Unit Price** to the lowest.<br>&nbsp;&nbsp;- **Overweight Stock:** Sell whole shares and move the executed trade value into **CRD_CASH**. Any unsellable remainder stays in the stock.<br>&nbsp;&nbsp;- **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent remainder stays in **CRD_CASH**.<br>- **Asset Cache:** The service refreshes the **Asset** metadata cache after balancing. |
-| **Security** | - A **Portfolio** contains two security types: **Stock** and **Cash**.<br>- **Stock** represents a tradable market security.<br>- **Cash** is represented by **CRD_CASH**.<br>&nbsp;&nbsp;It preserves unallocated value with a `$1` unit price, so the complete account value remains visible and auditable.<br>- **Balanced Action** by **Shares** rule.<br>- **Unit Price** is the agreed trade price used by **Balanced** processing.<br>&nbsp;&nbsp;- Do not use **Unit Price** to reverse-engineer existing shares. |
+### 1. Action
+
+1. **Buy / Sell** whole **Shares** of the security to meet the **Target %**.
+2. **No Trade** when the security is already at its **Target %**.
+3. **Shares** are calculated as whole shares in [Trade Math](#trade-math).
+
+### 2. Asset
+
+1. A portfolio of **Security** holdings valued in dollars.
+2. Scaled by **Balanced** processing.
+3. **Total Asset** is authoritative account metadata. It is the total dollar
+   value of **Security** in the book, including **CRD_CASH**.
+4. **Vested %** is the account-level percentage available for rebalancing
+   trades.
+
+For example, `$1,000` in total assets and `80%` vested means `$800` is
+available for trading.
+
+### 3. Balanced
+
+1. **Action:** A portfolio is balanced by applying an action to each security.
+2. **Current %:** The percentage of **Total Asset** in dollars currently
+   allocated to a security.
+3. **Current Value:** `[Current Value] = [Total Asset] * [Current %]`
+4. **Target %:** The **Asset** percentage targeted after balancing.
+5. **Target Variance %:** `[Target Variance %] = [Current %] - [Target %]`
+6. **Whole Shares:** Truncate `[Trade Value] / [Unit Price]` into an integer
+   share count to avoid silently losing portfolio value.
+7. **Decimal:** Use decimal arithmetic for money, prices, and percentages.
+8. **Vested:** Multiply each desired trade value by **Vested %** before
+   truncating to whole shares.
+9. **Remainder:** Preserve unexecuted trade value as **CRD_CASH** so
+    whole-share rounding does not lose account value over time.
+10. **Safe Integer:** Keep the integer share count within JavaScript's
+    safe-integer range.
+11. **Large Values:** For example, `$100 billion / $0.01 = 10 trillion` shares,
+    which remains below the safe-integer limit.
+12. **Trade Order:** Process **Sell** actions before **Buy** actions. Within
+    each action, process stocks from the highest **Unit Price** to the lowest.
+13. **Overweight Stock:** Sell whole shares and move the executed trade value
+    into **CRD_CASH**. Any unsellable remainder stays in the stock.
+14. **Underweight Stock:** Buy whole shares using **CRD_CASH**. Any unspent
+    remainder stays in **CRD_CASH**.
+15. **Asset Cache:** The service refreshes the **Asset** metadata cache after
+    balancing.
+
+### 4. Security
+
+1. A **Portfolio** contains two security types: **Stock** and **Cash**.
+2. **Stock** represents a tradable market security.
+3. **Cash** is represented by **CRD_CASH**. It preserves unallocated value with
+   a `$1` unit price, so the complete account value remains visible and
+   auditable.
+4. Rebalancing applies the **[Action](#1-action)** rules to each **Security**.
+5. **Unit Price** is the agreed trade price used by **Balanced** processing.
+6. Do not use **Unit Price** to reverse-engineer existing shares.
 
 ## Trade Math
 
@@ -74,8 +125,8 @@ steps:
    - `[Updated Current Value] = [Current Value] +/- ([Whole Shares] * [Unit Price])`
    - **Buy** actions consume available **CRD_CASH**, while **Sell** actions
      replenish it.
-   - Store any remaining value as **CRD_CASH**, then refresh the **Asset**
-     metadata cache.
+   - Store any remaining value as **CRD_CASH** to avoid losing money through
+     repeated whole-share rounding, then refresh the **Asset** metadata cache.
 
 For example, the IBM security in
 [North American - Technical Assessment QA.md](./North%20American%20-%20Technical%20Assessment%20QA.md)
