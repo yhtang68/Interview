@@ -29,6 +29,7 @@
     "lint:cucumber": "gplint features -c ./.gplintrc",
     "lint:eslint": "eslint .",
     "mock:start": "pwsh -ExecutionPolicy Bypass -File ./wiremock/start-mock.ps1",
+    "mock:start:debug": "pwsh -ExecutionPolicy Bypass -File ./wiremock/start-mock.ps1 -VerboseWireMock",
     "mock:stop": "pwsh -ExecutionPolicy Bypass -File ./wiremock/stop-mock.ps1",
     "reports": "run-s reports:generate reports:open",
     "reports:clear": "shx rm -rf results reports",

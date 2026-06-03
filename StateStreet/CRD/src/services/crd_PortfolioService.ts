@@ -25,9 +25,30 @@ export type CrdPortfolioServiceConfig = WireMockAdminConfig & {
     crd_portfolioService: {
         url: string;
     };
+    testTrace?: {
+        scenarioName: string;
+    };
+    testDiagnostics?: {
+        productRequests: ProductRequestDiagnostic[];
+    };
 };
 
 export type { Portfolio, PortfolioAccounts, PortfolioAsset, Security, SecurityTrade, TradeAction } from './crd_PortfolioModel';
+
+export type ProductRequestDiagnostic = {
+    request: {
+        method: string;
+        url: string;
+        headers: Record<string, string>;
+    };
+    response?: {
+        status: number;
+        statusText: string;
+        headers: Record<string, string>;
+        body?: unknown;
+    };
+    error?: string;
+};
 
 export class CrdPortfolioService {
     private readonly model = new CrdPortfolioModel();
@@ -58,7 +79,7 @@ export class CrdPortfolioService {
     }
 
     async fetchPortfolio(accountId: string): Promise<Portfolio> {
-        const response = await fetch(this.api.accounts.account(accountId).url);
+        const response = await this.fetchProduct(this.api.accounts.account(accountId).url);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch mock account data. Status: ${response.status} ${response.statusText}`);
@@ -73,7 +94,7 @@ export class CrdPortfolioService {
     }
 
     async fetchPortfolioAccounts(): Promise<PortfolioAccounts> {
-        const response = await fetch(this.api.accounts.list.url);
+        const response = await this.fetchProduct(this.api.accounts.list.url);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch mock portfolio accounts. Status: ${response.status} ${response.statusText}`);
@@ -88,7 +109,7 @@ export class CrdPortfolioService {
     }
 
     async hasPortfolio(accountId: string): Promise<boolean> {
-        const response = await fetch(this.api.accounts.account(accountId).url);
+        const response = await this.fetchProduct(this.api.accounts.account(accountId).url);
 
         if (response.status === 404) {
             return false;
@@ -246,5 +267,42 @@ export class CrdPortfolioService {
 
     private apiPath(api: string): string {
         return new URL(this.apiUrl(api)).pathname;
+    }
+
+    private async fetchProduct(url: string): Promise<Response> {
+        const method = 'GET';
+        const headers = this.traceHeaders();
+        const diagnostic: ProductRequestDiagnostic = {
+            request: {
+                method,
+                url,
+                headers,
+            },
+        };
+
+        try {
+            const response = await fetch(url, { headers });
+            diagnostic.response = {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                body: await response.clone().json().catch(() => undefined),
+            };
+
+            return response;
+        } catch (error) {
+            diagnostic.error = error instanceof Error ? error.message : String(error);
+            throw error;
+        } finally {
+            this.config.testDiagnostics?.productRequests.push(diagnostic);
+        }
+    }
+
+    private traceHeaders(): Record<string, string> {
+        const scenarioName = this.config.testTrace?.scenarioName;
+
+        return scenarioName === undefined
+            ? {}
+            : { 'X-CRD-Test-Scenario': scenarioName };
     }
 }

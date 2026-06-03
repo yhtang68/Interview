@@ -1,3 +1,5 @@
+$VerboseWireMock = $args -contains "-VerboseWireMock"
+
 $Arguments = @(
     "wiremock"
     "--port", "9999"
@@ -8,4 +10,10 @@ $Arguments = @(
     "--max-template-cache-entries", "0"
 )
 
-npx @Arguments
+if ($VerboseWireMock) {
+    $Arguments += "--verbose"
+}
+
+$LogPath = Join-Path $PSScriptRoot "wiremock.log"
+
+npx @Arguments 2>&1 | Tee-Object -FilePath $LogPath -Append
