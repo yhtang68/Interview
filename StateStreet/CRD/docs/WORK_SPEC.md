@@ -252,18 +252,77 @@ follows the steps defined above.
 
 ## Current State
 
-| Area | Status | Notes |
-| --- | --- | --- |
-| Requirements and assumptions | Complete | Trade-math decisions are documented above. |
-| Cucumber infrastructure | Complete | Shared config, local environment profile, runtime timeout setup, thin step definitions organized by product behavior, named lifecycle hooks with focused helpers, colored console output, JUnit XML results, Allure result data and reports, and TypeScript World are in place. |
-| WireMock contract | Complete | Static account `ABC` data remains readable for debugging. A typed WireMock service fetches mappings for CRD-owned filtering, resets mappings to the file-backed baseline before each run, finds scenario-owned dynamic mappings by readable metadata labels, updates repeated account mappings, and retains published dynamic mappings afterward for debugging. |
-| CRD portfolio service | Complete | A typed product service owns a readable endpoint tree, portfolio endpoint calls, account-name collection listing, clearing, reset, and dynamic fixture definitions. Clearing accounts removes the collection and individual account endpoints. Reset restores the static file-backed baseline. |
-| CRD portfolio model | Complete | A separate typed model owns payload validation, authoritative total-asset metadata, current-value validation, whole-share balancing, and `CRD_CASH` handling. |
-| Portfolio input validation | Complete | The static `GET` fixture scenario validates supplied securities and asset metadata. Dynamic setup stages asset metadata and securities by account, merges them in either order, and validates their current-value allocations before publishing the fixture. Existing dynamic accounts follow the same flow and are revised through WireMock mapping metadata. |
-| Accounts collection validation | Complete | Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing, registration, normalization, deduplication, clearing, deletion, reset, and idempotency behavior. |
-| Account portfolio validation | Complete | Dedicated `crd-account-portfolio-*.feature` files validate setup, revision, deletion, reset, successful retrieval, missing portfolios, malformed responses, dependency failures, empty portfolios, and zero-value portfolios. |
-| Rebalancing output validation | Complete | The dedicated balance features validate buy, sell, no-trade, trade order, whole-share truncation, mapping updates, final holdings, asset metadata, `CRD_CASH` remainder, insufficient cash, large values, and partial vesting. |
-| Non-functional coverage notes | Complete | `features/PRS.test.md` captures PRS and Security ideas for the API service. |
+### 1. Requirements And Assumptions
+
+- **Status:** Complete
+- Trade-math decisions are documented above.
+
+### 2. Cucumber Infrastructure
+
+- **Status:** Complete
+- Shared config, local environment profile, runtime timeout setup, thin step
+  definitions organized by product behavior, named lifecycle hooks with focused
+  helpers, colored console output, JUnit XML results, Allure result data and
+  reports, and TypeScript World are in place.
+
+### 3. WireMock Contract
+
+- **Status:** Complete
+- Static account `ABC` data remains readable for debugging. A typed WireMock
+  service fetches mappings for CRD-owned filtering, resets mappings to the
+  file-backed baseline before each run, finds scenario-owned dynamic mappings by
+  readable metadata labels, updates repeated account mappings, and retains
+  published dynamic mappings afterward for debugging.
+
+### 4. CRD Portfolio Service
+
+- **Status:** Complete
+- A typed product service owns a readable endpoint tree, portfolio endpoint
+  calls, account-name collection listing, clearing, reset, and dynamic fixture
+  definitions. Clearing accounts removes the collection and individual account
+  endpoints. Reset restores the static file-backed baseline.
+
+### 5. CRD Portfolio Model
+
+- **Status:** Complete
+- A separate typed model owns payload validation, authoritative total-asset
+  metadata, current-value validation, whole-share balancing, and `CRD_CASH`
+  handling.
+
+### 6. Portfolio Input Validation
+
+- **Status:** Complete
+- The static `GET` fixture scenario validates supplied securities and asset
+  metadata. Dynamic setup stages asset metadata and securities by account,
+  merges them in either order, and validates their current-value allocations
+  before publishing the fixture. Existing dynamic accounts follow the same flow
+  and are revised through WireMock mapping metadata.
+
+### 7. Accounts Collection Validation
+
+- **Status:** Complete
+- Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing,
+  registration, normalization, deduplication, clearing, deletion, reset, and
+  idempotency behavior.
+
+### 8. Account Portfolio Validation
+
+- **Status:** Complete
+- Dedicated `crd-account-portfolio-*.feature` files validate setup, revision,
+  deletion, reset, successful retrieval, missing portfolios, malformed
+  responses, dependency failures, empty portfolios, and zero-value portfolios.
+
+### 9. Rebalancing Output Validation
+
+- **Status:** Complete
+- The dedicated balance features validate buy, sell, no-trade, trade order,
+  whole-share truncation, mapping updates, final holdings, asset metadata,
+  `CRD_CASH` remainder, insufficient cash, large values, and partial vesting.
+
+### 10. Non-Functional Coverage Notes
+
+- **Status:** Complete
+- `features/PRS.test.md` captures PRS and Security ideas for the API service.
 
 ## PR Review Checklist
 
