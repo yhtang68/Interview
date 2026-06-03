@@ -4,4 +4,5 @@ node_modules/
 # Generated test artifacts
 results/
 reports/
+debug.log
 **/wiremock/*.log
