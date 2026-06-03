@@ -63,9 +63,8 @@ explicitly that WireMock currently serves the CRD portfolio product URL.
    value of **Security** in the book, including **CRD_CASH**.
 4. **Vested %** is the account-level percentage available for rebalancing
    trades.
-
-For example, `$1,000` in total assets and `80%` vested means `$800` is
-available for trading.
+   - For example, `$1,000` in total assets and `80%` vested means `$800` is
+     available for trading.
 
 ### 3. Balanced
 
