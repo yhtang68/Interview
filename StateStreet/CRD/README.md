@@ -155,7 +155,7 @@ bun run build
 
 ## Line Endings
 
-This project uses `.gitattributes` with `* text=auto`.
+This project uses `.gitattributes` with `* text=auto eol=lf`.
 
 - Git normalizes text files in the index so LF/CRLF differences do not become
   source diffs.
@@ -173,6 +173,23 @@ Run the test suite locally:
 
    ```powershell
    bun run mock:start
+   ```
+
+   For request-level WireMock debugging, start the mock in verbose mode:
+
+   ```powershell
+   bun run mock:start:debug
+   ```
+
+   WireMock output is shown in the console and copied to
+   `wiremock/wiremock.log`. In debug mode, product requests include the
+   `X-CRD-Test-Scenario` header so WireMock logs can be traced back to the
+   Cucumber scenario that sent the request.
+
+   To inspect recorded requests and their trace headers:
+
+   ```powershell
+   Invoke-RestMethod http://localhost:9999/__admin/requests
    ```
 
 2. In another terminal, run the local API scenarios:

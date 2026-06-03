@@ -9,6 +9,12 @@ export interface TestEnvironment {
     crd_portfolioService: {
         url: string;
     };
+    testTrace?: {
+        scenarioName: string;
+    };
+    testDiagnostics?: {
+        productRequests: ProductRequestDiagnostic[];
+    };
 }
 
 export interface TestWorld extends World {
@@ -23,6 +29,21 @@ export interface TestWorld extends World {
 export type PendingDynamicPortfolio = {
     asset?: PortfolioAsset;
     securities?: Security[];
+};
+
+export type ProductRequestDiagnostic = {
+    request: {
+        method: string;
+        url: string;
+        headers: Record<string, string>;
+    };
+    response?: {
+        status: number;
+        statusText: string;
+        headers: Record<string, string>;
+        body?: unknown;
+    };
+    error?: string;
 };
 
 export class CustomWorld extends World implements TestWorld {
@@ -40,7 +61,14 @@ export class CustomWorld extends World implements TestWorld {
             throw new Error('Cucumber world parameters are missing a valid environment configuration');
         }
 
-        this.env = parameters.env;
+        this.env = {
+            envName: parameters.env.envName,
+            wiremock: { ...parameters.env.wiremock },
+            crd_portfolioService: { ...parameters.env.crd_portfolioService },
+            testDiagnostics: {
+                productRequests: [],
+            },
+        };
         this.dynamicMappingIds = {};
         this.pendingDynamicPortfolios = {};
         this.responseBody = undefined;

@@ -1,4 +1,4 @@
-import { After, BeforeAll, Status } from '@cucumber/cucumber';
+import { After, Before, BeforeAll, Status } from '@cucumber/cucumber';
 import { checkWireMockHealth, resetWireMockMappings } from '../services/wiremockService';
 import { log } from './logger';
 import { isTestEnvironment, TestEnvironment, TestWorld } from './world';
@@ -11,6 +11,12 @@ BeforeAll({ name: 'Prepare WireMock mappings' }, async function () {
     log(`WireMock health: ${health.status}; version: ${String(health.version)}`);
     await resetWireMockMappings(env);
     log('WireMock mappings reset to the static file-backed baseline.');
+});
+
+Before<TestWorld>({ name: 'Trace scenario in mock requests' }, function ({ pickle }) {
+    this.env.testTrace = {
+        scenarioName: pickle.name,
+    };
 });
 
 // Preserve failed payloads for diagnosis while retaining mock data for debugging.
@@ -29,7 +35,16 @@ function testEnvironmentFrom(parameters: unknown): TestEnvironment {
 }
 
 async function attachFailureDiagnostics(world: TestWorld, status?: string): Promise<void> {
-    if (status === Status.FAILED && world.responseBody !== undefined) {
-        await world.attach(JSON.stringify(world.responseBody, null, 2), 'application/json');
+    if (status !== Status.FAILED) {
+        return;
+    }
+
+    const diagnostics = {
+        responseBody: world.responseBody,
+        productRequests: world.env.testDiagnostics?.productRequests ?? [],
+    };
+
+    if (diagnostics.responseBody !== undefined || diagnostics.productRequests.length > 0) {
+        await world.attach(JSON.stringify(diagnostics, null, 2), 'application/json');
     }
 }
