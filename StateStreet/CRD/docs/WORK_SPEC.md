@@ -6,8 +6,8 @@ This document is the source of truth for the proposed solution, assumptions,
 delivery plan, and current implementation state.
 
 [`README.md`](../README.md) remains the test architecture and execution guide.
-The Gherkin feature files remain the self-documented source for scenario
-behavior.
+The [Gherkin feature files](../features) remain the self-documented source for
+scenario behavior.
 
 ## Table Of Contents
 
@@ -111,20 +111,20 @@ The **Balanced** calculation applies each security's **Target %** in three
 steps:
 
 1. Calculate `[Target Value]` and `[Trade Value]`:
-   - `[Target Value] = [Total Asset] * [Target %]`
-   - `[Trade Value] = [Target Value] - [Current Value]`
+   1. `[Target Value] = [Total Asset] * [Target %]`
+   2. `[Trade Value] = [Target Value] - [Current Value]`
 
 2. Convert the required change into an executable order:
-   - `[Whole Shares] = truncate(abs([Trade Value]) / [Unit Price])`
-   - A positive `[Trade Value]` requires **Buy**.
-   - A negative `[Trade Value]` requires **Sell**.
-   - A zero `[Trade Value]`, or fewer than one executable share, requires **No Trade**.
+   1. `[Whole Shares] = truncate(abs([Trade Value]) / [Unit Price])`
+   2. A positive `[Trade Value]` requires **Buy**.
+   3. A negative `[Trade Value]` requires **Sell**.
+   4. A zero `[Trade Value]`, or fewer than one executable share, requires **No Trade**.
 
 3. Apply the order and preserve the remainder:
-   - `[Updated Current Value] = [Current Value] +/- ([Whole Shares] * [Unit Price])`
-   - **Buy** actions consume available **CRD_CASH**, while **Sell** actions
+   1. `[Updated Current Value] = [Current Value] +/- ([Whole Shares] * [Unit Price])`
+   2. **Buy** actions consume available **CRD_CASH**, while **Sell** actions
      replenish it.
-   - Store any remaining value as **CRD_CASH** to avoid losing money through
+   3. Store any remaining value as **CRD_CASH** to avoid losing money through
      repeated whole-share rounding, then refresh the **Asset** metadata cache.
 
 For example, the IBM security in
@@ -132,122 +132,122 @@ For example, the IBM security in
 follows the steps defined above.
 
 1. Calculate `[Target Value]` and `[Trade Value]`:
-   - `[Target Value] = $100,000 * 20% = $20,000`
-   - `[Current Value] = $100,000 * 10% = $10,000`
-   - `[Trade Value] = $20,000 - $10,000 = $10,000`
+   1. `[Target Value] = $100,000 * 20% = $20,000`
+   2. `[Current Value] = $100,000 * 10% = $10,000`
+   3. `[Trade Value] = $20,000 - $10,000 = $10,000`
 
 2. Convert the required change into an executable order:
-   - `[Whole Shares] = truncate($10,000 / $150) = 66`
-   - IBM requires a **Buy** action.
+   1. `[Whole Shares] = truncate($10,000 / $150) = 66`
+   2. IBM requires a **Buy** action.
 
 3. Apply the order and preserve the remainder:
-   - `[Updated Current Value] = $10,000 + (66 * $150) = $19,900`
-   - Consume available cash or **Sell** proceeds for the **Buy** action.
-     - The supplied example does not include **CRD_CASH** to consume yet.
-   - When cash is available, keep the unspent `$100` in **CRD_CASH**.
+   1. `[Updated Current Value] = $10,000 + (66 * $150) = $19,900`
+   2. Consume available cash or **Sell** proceeds for the **Buy** action.
+   3. The supplied example does not include **CRD_CASH** to consume yet.
+   4. When cash is available, keep the unspent `$100` in **CRD_CASH**.
 
 ## Six-Step Delivery Plan
 
 ### 1. Capture Requirements And Assumptions
 
-- **Explicit Rules:** See [Assumptions](#assumptions) and
-  [Trade Math](#trade-math).
-- **Validated Math:** See [Trade Math](#trade-math).
+- Detailed in [Assumptions](#assumptions) and [Trade Math](#trade-math).
 
 ### 2. Define Test Coverage
 
-- **Automation First:** The current API surface is expected to be fully automatable through the
-  Cucumber and WireMock infrastructure. Separate manual execution is not
-  planned; the readable Gherkin scenarios remain the human-reviewable test-case
-  record.
-- **Baseline:** Cover the supplied account `ABC` happy path.
-- **Edge Cases:** Cover zero variance, underweight buy, overweight sell, fractional shares,
-  invalid account, malformed data, unavailable dependency, and boundary cases.
-- **Non-Functional Notes:** See [PRS.test.md](../features/PRS.test.md).
-- **Review Ready:** Use Gherkin BDD and Allure Report to make interview
-  discussion easier.
+1. **Automation First:** The current API surface is expected to be fully
+   automatable through the Cucumber and WireMock infrastructure. Separate
+   manual execution is not planned; the readable Gherkin scenarios remain the
+   human-reviewable test-case record.
+2. **Baseline:** Cover the supplied account `ABC` happy path.
+3. **Edge Cases:** Cover zero variance, underweight buy, overweight sell,
+   fractional shares, invalid account, malformed data, unavailable dependency,
+   and boundary cases.
+4. **Non-Functional Notes:** See [PRS.test.md](../features/PRS.test.md).
+5. **Review Ready:** Use Gherkin BDD and Allure Report to make interview
+   discussion easier.
 
 ### 3. Build The Local Mock Contract
 
-#### **- WireMock -**
+#### 3.1 WireMock
 
-| Rule | Requirement |
-| --- | --- |
-| **Configurable URLs** | For example, configure local URLs in `config/env/local.api.conf.js`. |
-| **Debuggable State** | Retain scenario-owned dynamic mappings after the test run for debugging. |
-| **Deterministic Baseline** | Reset mappings to static file-backed before each test run. |
-| **Readable Fixtures** | Keep `wiremock/mappings` and `wiremock/__files` readable and deterministic. |
+1. **Configurable URLs:** For example, configure local URLs in
+   `config/env/local.api.conf.js`.
+2. **Debuggable State:** Retain scenario-owned dynamic mappings after the test
+   run for debugging.
+3. **Deterministic Baseline:** Reset mappings to static file-backed before each
+   test run.
+4. **Readable Fixtures:** Keep `wiremock/mappings` and `wiremock/__files`
+   readable and deterministic.
 
-#### **- Accounts[] -**
+#### 3.2 Accounts[]
 
-| Rule | Requirement |
-| --- | --- |
-| **Features** | Keep `Accounts[]` collection scenarios in dedicated `crd-accounts*.feature` files. |
+1. **Features:** Keep `Accounts[]` collection scenarios in dedicated
+   [`crd-accounts*.feature`](../features) files.
 
-#### **- Account {} - Portfolio -**
+#### 3.3 Account {} - Portfolio
 
-| Rule | Requirement |
-| --- | --- |
-| **DELETE Portfolio** | Deleting an account from `Accounts[]` also removes its `Account {}` portfolio. |
-| **GET Portfolio** | Match the static `ABC` portfolio fixture explicitly.<br>For example, `GET http://localhost:9999/accounts/abc-empty` returns `404` when `ABC-EMPTY` exists in `Accounts[]` but has no `Account {}` portfolio. |
-| **Features** | Keep `Account {}` portfolio scenarios in dedicated `crd-account-portfolio*.feature` files. |
-| **Mock Endpoint** | A WireMock endpoint, for example `GET http://localhost:9999/accounts/abc`. |
+1. **DELETE Portfolio:** Deleting an account from `Accounts[]` also removes its
+   `Account {}` portfolio.
+2. **GET Portfolio:** Match the static `ABC` portfolio fixture explicitly.
+   - For example, `GET http://localhost:9999/accounts/abc-empty` returns `404`
+     when `ABC-EMPTY` exists in `Accounts[]` but has no `Account {}` portfolio.
+3. **Features:** Keep `Account {}` portfolio scenarios in dedicated
+   [`crd-account-portfolio*.feature`](../features) files.
+4. **Mock Endpoint:** A WireMock endpoint, for example
+   `GET http://localhost:9999/accounts/abc`.
 
 ### 4. Automate Portfolio Input Validation
 
-#### **- WireMock -**
+#### 4.1 WireMock
 
-| Rule | Requirement |
-| --- | --- |
-| **Mock Health** | For example, `GET http://localhost:9999/__admin/health`. |
+1. **Mock Health:** For example, `GET http://localhost:9999/__admin/health`.
 
-#### **- Account {} - Portfolio Input -**
+#### 4.2 Account {} - Portfolio Input
 
-| Rule | Requirement |
-| --- | --- |
-| **Authoritative Asset** | See `wiremock/__files/portfolioService/accounts/abc.json`. |
-| **Derived Cache** | For example, `{ "cash_percentage": 0.2, "stocks_percentage": 99.8 }`. |
-| **Flexible Setup Order** | Support `POST securities` then `POST asset`, or `POST asset` then `POST securities`. |
-| **No Reverse Engineering** | Do not derive `total_asset` from `unit_price`. |
-| **Vested Input** | For example, `{ "vested": 0.8 }`. |
+1. **Authoritative Asset:** See
+   `wiremock/__files/portfolioService/accounts/abc.json`.
+2. **Derived Cache:** For example,
+   `{ "cash_percentage": 0.2, "stocks_percentage": 99.8 }`.
+3. **Flexible Setup Order:** Support `POST securities` then `POST asset`, or
+   `POST asset` then `POST securities`.
+4. **No Reverse Engineering:** Do not derive `total_asset` from `unit_price`.
+5. **Vested Input:** For example, `{ "vested": 0.8 }`.
 
-#### **- Cucumber -**
+#### 4.3 Cucumber
 
-| Rule | Requirement |
-| --- | --- |
-| **Readable Automation** | See `features/*.feature` and `src/step_definitions/*.ts`. |
+1. **Readable Automation:** See [`features/*.feature`](../features) and
+   [`src/step_definitions/*.ts`](../src/step_definitions).
 
 ### 5. Automate Rebalancing Output Validation
 
-#### **- Account {} - Portfolio Output -**
+#### 5.1 Account {} - Portfolio Output
 
-| Rule | Requirement |
-| --- | --- |
-| **Vested Visibility** | For example, `{ "vested": 0.8 }`. |
-| **Visible Remainder** | See `features/crd-account-portfolio-balanced.feature`. |
+1. **Vested Visibility:** For example, `{ "vested": 0.8 }`.
+2. **Visible Remainder:** See
+   [`features/crd-account-portfolio-balanced.feature`](../features/crd-account-portfolio-balanced.feature).
 
-#### **- Security {} - Trade Validation -**
+#### 5.2 Security {} - Trade Validation
 
-| Rule | Requirement |
-| --- | --- |
-| **Flexible Assertions** | See `features/crd-account-portfolio-balanced.feature`. |
-| **Trade Actions** | For example, `{ "security": "IBM", "action": "Buy", "shares": 16 }`. |
-| **Whole Shares** | For example, `{ "security": "IBM", "shares": 16 }`. |
+1. **Flexible Assertions:** See
+   [`features/crd-account-portfolio-balanced.feature`](../features/crd-account-portfolio-balanced.feature).
+2. **Trade Actions:** For example,
+   `{ "security": "IBM", "action": "Buy", "shares": 16 }`.
+3. **Whole Shares:** For example, `{ "security": "IBM", "shares": 16 }`.
 
-#### **- Test Coverage -**
+#### 5.3 Test Coverage
 
-| Rule | Requirement |
-| --- | --- |
-| **Focused Edges** | See `features/crd-account-portfolio-balanced-edge*.feature`. |
+1. **Focused Edges:** See
+   [`features/crd-account-portfolio-balanced-edge*.feature`](../features).
 
 ### 6. Verify Delivery And Review Readiness
 
-- **Lint:** Run `bun run lint`.
-- **Build:** Run `bun run build`.
-- **Start Mock:** Start WireMock with `bun run mock:start`.
-- **Run Tests:** Run the local Cucumber suite with `.\run-tests.ps1 -TestEnv local`.
-- **Review Risks:** Review the PR against this spec and call out any unimplemented items,
-  assumptions, and residual risks.
+1. **Lint:** Run `bun run lint`.
+2. **Build:** Run `bun run build`.
+3. **Start Mock:** Start WireMock with `bun run mock:start`.
+4. **Run Tests:** Run the local Cucumber suite with
+   `.\run-tests.ps1 -TestEnv local`.
+5. **Review Risks:** Review the PR against this spec and call out any
+   unimplemented items, assumptions, and residual risks.
 
 ## Current State
 
@@ -300,14 +300,14 @@ follows the steps defined above.
 ### 7. Accounts Collection Validation
 
 - **Status:** Complete
-- Dedicated `crd-accounts*.feature` files validate `Accounts[]` listing,
+- Dedicated [`crd-accounts*.feature`](../features) files validate `Accounts[]` listing,
   registration, normalization, deduplication, clearing, deletion, reset, and
   idempotency behavior.
 
 ### 8. Account Portfolio Validation
 
 - **Status:** Complete
-- Dedicated `crd-account-portfolio-*.feature` files validate setup, revision,
+- Dedicated [`crd-account-portfolio-*.feature`](../features) files validate setup, revision,
   deletion, reset, successful retrieval, missing portfolios, malformed
   responses, dependency failures, empty portfolios, and zero-value portfolios.
 
@@ -321,7 +321,8 @@ follows the steps defined above.
 ### 10. Non-Functional Coverage Notes
 
 - **Status:** Complete
-- `features/PRS.test.md` captures PRS and Security ideas for the API service.
+- [`features/PRS.test.md`](../features/PRS.test.md) captures PRS and Security
+  ideas for the API service.
 
 ## PR Review Checklist
 
