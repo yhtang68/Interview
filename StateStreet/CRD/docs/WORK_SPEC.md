@@ -326,10 +326,10 @@ follows the steps defined above.
 
 ## PR Review Checklist
 
-- [x] Requirements and assumptions are documented.
-- [x] Implemented test cases are captured as readable, executable Cucumber scenarios.
-- [x] Remaining `Account{}` portfolio backlog scenarios are implemented.
-- [x] WireMock starts locally and serves the account fixture.
-- [x] Cucumber validates the supplied portfolio input.
-- [x] Automated checks validate buy, sell, and no-trade share outputs.
-- [x] ESLint, Gherkin lint, TypeScript compilation, and the local Cucumber suite pass.
+1. [x] Requirements and assumptions are documented.
+2. [x] Implemented test cases are captured as readable, executable Cucumber scenarios.
+3. [x] Remaining `Account{}` portfolio backlog scenarios are implemented.
+4. [x] WireMock starts locally and serves the account fixture.
+5. [x] Cucumber validates the supplied portfolio input.
+6. [x] Automated checks validate buy, sell, and no-trade share outputs.
+7. [x] ESLint, Gherkin lint, TypeScript compilation, and the local Cucumber suite pass.
