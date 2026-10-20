@@ -1,0 +1,179 @@
+.header {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  border-bottom: 1px solid #dfe3e8;
+  background: #fff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #ff6c37;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.brandCopy {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.brandCopy span {
+  color: #737d8c;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.actions,
+.repoBranches,
+.indexControl,
+.branch {
+  display: flex;
+  align-items: center;
+}
+
+.actions {
+  gap: 12px;
+}
+
+.repoBranches {
+  gap: 6px;
+}
+
+.branch {
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 6px;
+  background: #fafbfc;
+  font: 12px 'DM Mono', Consolas, monospace;
+}
+
+.branch i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #27ae60;
+}
+
+.branch b {
+  color: #9aa7b5;
+  font: 700 12px/1.3 Inter, 'Segoe UI', sans-serif;
+  white-space: nowrap;
+}
+
+.branch b::after {
+  content: ':';
+}
+
+.branch em {
+  max-width: 300px;
+  overflow: hidden;
+  color: #293442;
+  font: 12px/1.3 'DM Mono', Consolas, monospace;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indexControl {
+  gap: 9px;
+}
+
+.indexButton {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: #596577;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.indexButton:hover:not(:disabled) {
+  border-color: #d7dce2;
+  background: #f7f8fa;
+}
+
+.indexButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.indexControl > small {
+  color: #7d8794;
+  font: 12px/1.3 'DM Mono', Consolas, monospace;
+  white-space: nowrap;
+}
+
+.themeToggle,
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.themeToggle {
+  display: grid;
+  place-items: center;
+  border: 1px solid #dfe3e8;
+  background: #fff;
+  color: #394657;
+  font-size: 17px;
+}
+
+.avatar {
+  border: 0;
+  background: #222b38;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+:global([data-theme='dark']) .header {
+  border-color: #303947;
+  background: #181f29;
+}
+
+:global([data-theme='dark']) .branch,
+:global([data-theme='dark']) .themeToggle {
+  border-color: #3a4554;
+  background: #222b37;
+  color: #dce3eb;
+}
+
+:global([data-theme='dark']) .branch em {
+  color: #e6ebf1;
+}
+
+:global([data-theme='dark']) .indexButton,
+:global([data-theme='dark']) .indexControl > small {
+  color: #9aa7b5;
+}
+
+:global([data-theme='dark']) .indexButton:hover:not(:disabled) {
+  border-color: #3a4554;
+  background: #202834;
+}
+
+:global(:root:not([data-theme='dark'])) .header {
+  border-color: #ddd7cc;
+  background: #f7f3eb;
+}

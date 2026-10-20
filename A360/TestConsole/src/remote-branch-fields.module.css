@@ -1,0 +1,284 @@
+.fields {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.actions {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.actions > span {
+  margin-right: 2px;
+  color: #7a8796;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.actions > div {
+  display: flex;
+}
+
+.actions button {
+  overflow: hidden;
+  max-width: 180px;
+  padding: 6px 9px;
+  border: 1px solid #cbd2da;
+  border-radius: 0;
+  background: #f7f9fb;
+  color: #596777;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.actions button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.actions button:last-child {
+  margin-left: -1px;
+  border-radius: 0 6px 6px 0;
+}
+
+.actions button:only-child {
+  margin-left: 0;
+  border-radius: 6px;
+}
+
+.actions button:hover {
+  background: #edf1f5;
+  color: #273443;
+}
+
+.actions button[aria-pressed='true'] {
+  position: relative;
+  border-color: #d28a45;
+  background: #fff1df;
+  color: #934b17;
+}
+
+.actions button[aria-pressed='true']::before {
+  content: '●';
+  margin-right: 5px;
+  font-size: 8px;
+}
+
+.custom {
+  color: #9a531d;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.field {
+  min-width: 0;
+}
+
+.field > label {
+  display: block;
+  margin-bottom: 6px;
+  color: #586575;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.combo {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+}
+
+.combo input {
+  width: 100%;
+  height: 38px;
+  min-width: 0;
+  border: 1px solid #d7dce2;
+  border-radius: 6px 0 0 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: #293442;
+  outline: none;
+}
+
+.combo input:focus {
+  border-color: #d28a45;
+  box-shadow: 0 0 0 2px #d28a4526;
+}
+
+.combo input.different {
+  border-color: #d7a13c;
+  box-shadow: 0 0 0 1px #d7a13c40;
+}
+
+.toggle {
+  border: 1px solid #cbd2da;
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  background: #f1f4f7;
+  color: #596777;
+  cursor: pointer;
+}
+
+.toggle:hover,
+.toggle[aria-expanded='true'] {
+  background: #e5eaf0;
+  color: #273443;
+}
+
+.menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid #c4ccd5;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 12px 25px #17212d2b;
+}
+
+.option {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  padding: 9px 11px;
+  background: transparent;
+  color: #2f3b49;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:hover,
+.option[aria-selected='true'] {
+  background: #eef2f6;
+}
+
+.option span {
+  overflow: hidden;
+  font-family: 'DM Mono', Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option small {
+  flex: none;
+  color: #7a8796;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.localBranch {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: #7a8796;
+  font: 10px/1.35 Inter, 'Segoe UI', sans-serif;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.localBranch b {
+  color: #536172;
+  font-family: 'DM Mono', Consolas, monospace;
+  font-weight: 500;
+}
+
+:global([data-theme='dark']) .field > label,
+:global([data-theme='dark']) .localBranch {
+  color: #9aa7b5;
+}
+
+:global([data-theme='dark']) .localBranch b {
+  color: #cbd5df;
+}
+
+:global([data-theme='dark']) .actions > span {
+  color: #9aa7b5;
+}
+
+:global([data-theme='dark']) .actions button {
+  border-color: #465365;
+  background: #2b3644;
+  color: #bdc7d2;
+}
+
+:global([data-theme='dark']) .actions button:hover {
+  background: #354354;
+  color: #fff;
+}
+
+:global([data-theme='dark']) .actions button[aria-pressed='true'] {
+  border-color: #a76b32;
+  background: #472f1c;
+  color: #ffb46f;
+}
+
+:global([data-theme='dark']) .custom {
+  color: #ffb46f;
+}
+
+:global([data-theme='dark']) .combo input.different {
+  border-color: #d6aa4e;
+}
+
+:global([data-theme='dark']) .combo input {
+  border-color: #3a4554;
+  background: #202834;
+  color: #e6ebf1;
+}
+
+:global([data-theme='dark']) .toggle {
+  border-color: #465365;
+  background: #2b3644;
+  color: #bdc7d2;
+}
+
+:global([data-theme='dark']) .toggle:hover,
+:global([data-theme='dark']) .toggle[aria-expanded='true'] {
+  background: #354354;
+  color: #fff;
+}
+
+:global([data-theme='dark']) .menu {
+  border-color: #465365;
+  background: #222c38;
+  box-shadow: 0 12px 25px #05090ea8;
+}
+
+:global([data-theme='dark']) .option {
+  color: #e6ebf1;
+}
+
+:global([data-theme='dark']) .option:hover,
+:global([data-theme='dark']) .option[aria-selected='true'] {
+  background: #334052;
+}
+
+:global([data-theme='dark']) .option small {
+  color: #aab5c1;
+}
+
+:global(:root:not([data-theme='dark'])) .combo input {
+  border-color: #d8d1c5;
+  background: #fffdf8;
+}
+
+@media (max-width: 1200px) {
+  .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

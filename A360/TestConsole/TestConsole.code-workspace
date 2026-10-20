@@ -1,0 +1,100 @@
+{
+  "folders": [{ "name": "PATH Test Console", "path": "." }],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [120],
+    "files.exclude": { "**/.vite": true, "**/dist": true },
+    "search.exclude": { "**/node_modules": true, "**/dist": true, "**/.vite": true },
+    "files.watcherExclude": { "**/node_modules/**": true, "**/dist/**": true },
+    "npm.packageManager": "npm",
+    "npm.enableRunFromFolder": true,
+    "debug.javascript.autoAttachFilter": "smart",
+    "workbench.editorAssociations": { "*.md": "vscode.markdown.preview.editor" }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Test Console: Dev",
+        "type": "npm",
+        "script": "dev",
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": { "reveal": "always", "panel": "dedicated" }
+      },
+      {
+        "label": "Test Console: Lint",
+        "type": "npm",
+        "script": "lint",
+        "problemMatcher": "$eslint-stylish"
+      },
+      {
+        "label": "Test Console: Typecheck",
+        "type": "npm",
+        "script": "typecheck",
+        "group": "build",
+        "problemMatcher": "$tsc"
+      },
+      {
+        "label": "Test Console: Test",
+        "type": "npm",
+        "script": "test",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Test Console: Check All",
+        "type": "npm",
+        "script": "check",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Test Console: Build",
+        "type": "npm",
+        "script": "build",
+        "group": { "kind": "build", "isDefault": true },
+        "problemMatcher": "$tsc"
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Test Console: Server",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["start"],
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "skipFiles": ["<node_internals>/**"]
+      },
+      {
+        "name": "Test Console: Chrome",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:5173",
+        "webRoot": "${workspaceFolder}/src",
+        "preLaunchTask": "Test Console: Dev"
+      }
+    ]
+  }
+}

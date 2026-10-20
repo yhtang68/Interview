@@ -1,0 +1,43 @@
+{
+  "testSource": {
+    "testsRoot": "C:\\PATH_Project\\qa-pathtestsuites\\tests",
+    "frameworkRepo": "C:\\PATH_Project\\qa-path",
+    "testsRepo": "C:\\PATH_Project\\qa-pathtestsuites",
+    "featureGroup": "trading"
+  },
+  "podRunConfig": {
+    "host": "https://qa-automation.advisor360.com/pathapi/builds/debugpod",
+    "params": {
+      "path_branch": "{{path_branch}}",
+      "tests_branch": "{{tests_branch}}",
+      "jobname": "{{jobname}}",
+      "publish": false,
+      "cache": false,
+      "numprocesses": 1
+    },
+    "body": [
+      "NAME: {{featureGroup}}-mdl",
+      "SCHEDULED: true",
+      "TESTJOBS:",
+      "  - CONFIG: {{configName}}",
+      "    NAME: {{jobName}}",
+      "{{testCasesBlock}}",
+      "",
+      "TEAMS:",
+      "  - {{featureGroup}}"
+    ],
+    "userSuffix": "$WINDOWS_USER"
+  },
+  "historyConfig": {
+    "retentionDays": 7
+  },
+  "developmentConfig": {
+    "terminalSpinnerStyle": "classic"
+  },
+  "localRunConfig": {
+    "venvPath": "C:\\PATH_Project\\venv",
+    "browser": "chrome",
+    "allure": false,
+    "logDir": "C:\\PATH_Project\\qa-pathtestsuites\\logs"
+  }
+}
