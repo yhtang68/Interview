@@ -1,0 +1,37 @@
+{
+  "name": "trad-test-console",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "npm run typecheck && vite build",
+    "check": "npm run lint && npm run build && npm test",
+    "lint": "eslint . --max-warnings 0",
+    "start": "tsx server/index.ts",
+    "test": "tsx --test test/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "stop": "tsx scripts/stop.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "express": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "^8.67.0"
+  }
+}

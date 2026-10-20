@@ -1,0 +1,51 @@
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px 8px;
+  background: #1e2632;
+}
+
+.rail button {
+  display: flex;
+  height: 58px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #97a1af;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.rail button.active {
+  background: #303a48;
+  color: #fff;
+  box-shadow: inset 3px 0 0 #ff6c37;
+}
+
+.icon {
+  font-size: 17px;
+}
+
+:global(:root:not([data-theme='dark'])) .rail {
+  border-right: 1px solid #d8d1c5;
+  background: #eee9df;
+}
+
+:global(:root:not([data-theme='dark'])) .rail button {
+  color: #596577;
+}
+
+:global(:root:not([data-theme='dark'])) .rail button:hover {
+  background: #e5dfd4;
+  color: #293442;
+}
+
+:global(:root:not([data-theme='dark'])) .rail button.active {
+  background: #dce4ed;
+  color: #172b45;
+}

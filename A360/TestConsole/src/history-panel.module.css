@@ -1,0 +1,489 @@
+.page {
+  --history-text: #293442;
+  --history-muted: #697586;
+  --history-line: #c8c0b4;
+  --history-chip-bg: #e7ebef;
+  --history-chip-text: #596577;
+  --history-run-border: #ddd7cc;
+  --history-run-bg: transparent;
+  --history-run-text: #334155;
+  --history-hover-border: #e2a184;
+  --history-hover-bg: #fff7f3;
+  --history-pass: #18794e;
+  --history-fail: #b42318;
+  --history-progress: #946200;
+  display: flex;
+  min-height: 100%;
+  height: 100%;
+  flex-direction: column;
+  padding: 0;
+  color: var(--history-text);
+  font: 12px Inter, 'Segoe UI', sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 18px 8px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.runCount {
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font-size: 10px;
+}
+
+.search {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin: 14px 18px 5px;
+  padding: 0 10px;
+  border: 1px solid #d8d1c5;
+  border-radius: 7px;
+  background: #fffdf8;
+  box-shadow: 0 1px 2px #1223;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.search:focus-within {
+  border-color: #ff8a61;
+  box-shadow: 0 0 0 3px #ff6c3718;
+}
+
+.searchIcon {
+  font-size: 17px;
+}
+
+.search input {
+  width: 100%;
+  height: 42px;
+  padding: 0 8px;
+  border: 0;
+  outline: 0;
+  font-size: 14px;
+}
+
+.search button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.statusFilters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  flex: none;
+  gap: 4px;
+  margin: 5px 18px 10px;
+}
+
+.statusFilter {
+  min-width: 0;
+  padding: 5px 3px;
+  border: 1px solid #d8d1c5;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--history-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.statusFilter:not(:disabled):hover,
+.statusFilter:focus-visible {
+  border-color: #e2a184;
+  color: var(--history-text);
+}
+
+.statusFilterActive {
+  border-color: #d87550;
+  background: #fff0e8;
+  color: #8f3416;
+  font-weight: 700;
+}
+
+.resetFilter {
+  min-width: 0;
+  padding: 5px 3px;
+  border: 0;
+  background: transparent;
+  color: var(--history-muted);
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.resetFilter:not(:disabled):hover,
+.resetFilter:focus-visible {
+  color: var(--history-text);
+}
+
+.resetFilter:disabled {
+  opacity: 0.45;
+  text-decoration: none;
+  cursor: default;
+}
+
+.tree {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 10px 18px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.empty {
+  padding: 30px;
+  color: #8a95a3;
+  font-size: 12px;
+  text-align: center;
+}
+
+.date,
+.suite {
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+}
+
+.date + .date,
+.suite + .suite {
+  margin-top: 4px;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.topSummary {
+  padding: 9px 8px;
+  border-radius: 7px;
+}
+
+.foldSymbol {
+  font-size: 0;
+}
+
+.foldSymbol::before {
+  content: '+';
+  font-size: 17px;
+}
+
+.disclosure[open] > .summary .foldSymbol::before {
+  content: '−';
+}
+
+.dateLabel,
+.suiteLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.suiteLabel {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.environmentBadges {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+}
+
+.environmentBadge {
+  padding: 2px 5px;
+  border: 1px solid;
+  border-radius: 4px;
+  font: 700 9px/1.2 'DM Mono', Consolas, monospace;
+  letter-spacing: 0.03em;
+}
+
+.tenantBadge,
+.stageBadge {
+  border-color: #b8c0ca;
+  background: #eef1f4;
+  color: #334155;
+}
+
+.stageDev {
+  border-color: #7ca5d2;
+  background: #eaf3ff;
+  color: #245a96;
+}
+
+.stageQa {
+  border-color: #c7a24a;
+  background: #fff4d6;
+  color: #765000;
+}
+
+.stageUat {
+  border-color: #67a99c;
+  background: #e4f7f2;
+  color: #176456;
+}
+
+.stageStage {
+  border-color: #a68bc9;
+  background: #f2eaff;
+  color: #5b3b8d;
+}
+
+.stageProd {
+  border-color: #d28a8a;
+  background: #fff0f0;
+  color: #973737;
+}
+
+.suiteDisplayName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dateCount {
+  margin-left: auto;
+  color: var(--history-muted);
+  font-size: 12px;
+}
+
+.dateBody {
+  padding: 0 0 5px 12px;
+}
+
+.suiteBody {
+  display: grid;
+  gap: 8px;
+  padding: 2px 4px 8px 18px;
+}
+
+.kind {
+  padding-left: 12px;
+  border-left: 1px solid var(--history-line);
+}
+
+.kindSummary {
+  padding: 4px 0 7px;
+}
+
+.kindHeading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kindCount,
+.branchCount {
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--history-chip-bg);
+  color: var(--history-chip-text);
+  font-size: 10px;
+}
+
+.branchSets {
+  display: grid;
+  gap: 8px;
+}
+
+.branchSet {
+  min-width: 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--history-line);
+}
+
+.branchSummary {
+  gap: 8px;
+  padding: 4px 0 7px;
+}
+
+.branchNames {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.branchName {
+  overflow-wrap: anywhere;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.branchCount {
+  flex: none;
+}
+
+.runList {
+  display: grid;
+  gap: 6px;
+}
+
+.runButton {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid var(--history-run-border);
+  border-radius: 6px;
+  background: var(--history-run-bg);
+  color: var(--history-run-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.runButton:hover {
+  border-color: var(--history-hover-border);
+  background: var(--history-hover-bg);
+}
+
+.runDetails {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.runTime {
+  font: 12px 'DM Mono', monospace;
+}
+
+.testNames {
+  display: block;
+  color: inherit;
+  font: 10px/1.35 'DM Mono', monospace;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  flex: none;
+  margin-top: 1px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.passed {
+  color: var(--history-pass);
+}
+
+.failed,
+.cancelled {
+  color: var(--history-fail);
+}
+
+.running,
+.incomplete {
+  color: var(--history-progress);
+}
+
+:global([data-theme='dark']) .page {
+  --history-text: #dce3eb;
+  --history-muted: #9da9b7;
+  --history-line: #465160;
+  --history-chip-bg: #28313e;
+  --history-chip-text: #aab5c2;
+  --history-run-border: #3a4554;
+  --history-run-bg: #202834;
+  --history-run-text: #dce3eb;
+  --history-hover-border: #c86b48;
+  --history-hover-bg: #282f3b;
+  --history-pass: #72dd98;
+  --history-fail: #ff8585;
+  --history-progress: #fff19a;
+}
+
+:global([data-theme='dark']) .search {
+  border-color: #3a4554;
+  background: #202834;
+  color: #e6ebf1;
+}
+
+:global([data-theme='dark']) .search input {
+  background: transparent;
+  color: #e6ebf1;
+}
+
+:global([data-theme='dark']) .statusFilter {
+  border-color: #3a4554;
+}
+
+:global([data-theme='dark']) .statusFilterActive {
+  border-color: #c86b48;
+  background: #3b2b25;
+  color: #ffb294;
+}
+
+:global([data-theme='dark']) .tenantBadge,
+:global([data-theme='dark']) .stageBadge {
+  border-color: #526071;
+  background: #232c38;
+  color: #dce3eb;
+}
+
+:global([data-theme='dark']) .stageDev {
+  border-color: #557fae;
+  background: #1e3552;
+  color: #9ac8ff;
+}
+
+:global([data-theme='dark']) .stageQa {
+  border-color: #947323;
+  background: #40351e;
+  color: #ffd978;
+}
+
+:global([data-theme='dark']) .stageUat {
+  border-color: #397f72;
+  background: #1d3d39;
+  color: #8de0cf;
+}
+
+:global([data-theme='dark']) .stageStage {
+  border-color: #795fa5;
+  background: #32264a;
+  color: #d1b6ff;
+}
+
+:global([data-theme='dark']) .stageProd {
+  border-color: #a55454;
+  background: #452629;
+  color: #ffabab;
+}

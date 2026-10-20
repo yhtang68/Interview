@@ -1,0 +1,2192 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  font-family:
+    Inter,
+    Segoe UI,
+    sans-serif;
+  color: #17202a;
+  background: #f6f7f9;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+html,
+body {
+  margin: 0;
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+.app {
+  display: grid;
+  grid-template: 64px 1fr / 76px var(--side-panel-width, 390px) minmax(0, 1fr);
+  height: 100%;
+  min-width: 1050px;
+}
+.field label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #778291;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.field select,
+.field input {
+  height: 38px;
+  border: 1px solid #d7dce2;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: #293442;
+}
+.tabs button {
+  border: 0;
+  background: none;
+  padding: 10px 7px;
+  color: #697586;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tabs button.active {
+  border-color: #ff6c37;
+  color: #202935;
+  font-weight: 600;
+}
+.workspace {
+  padding: 20px 26px 50px;
+  overflow: auto;
+}
+.crumb {
+  font-size: 11px;
+  color: #7f8997;
+  margin: 0 0 15px;
+}
+.crumb span {
+  padding: 0 6px;
+  color: #bac0c8;
+}
+.request-card,
+.console {
+  border: 1px solid #dde2e7;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px #18202c0c;
+}
+.request-title {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px 20px;
+}
+.request-title h1 {
+  font-size: 17px;
+  margin: 0;
+}
+.request-title p {
+  font: 10px 'DM Mono';
+  color: #7b8694;
+  margin: 4px 0 0;
+}
+.method {
+  font: 700 10px 'DM Mono';
+  padding: 5px 7px;
+  border-radius: 4px;
+  background: #eaf7ef;
+  color: #208b4e;
+}
+.method.remote {
+  background: #eaf2ff;
+  color: #2463b4;
+}
+.selection-count {
+  margin-left: auto;
+  color: #7d8794;
+  font-size: 11px;
+}
+.tabs {
+  display: flex;
+  gap: 18px;
+  border-bottom: 1px solid #e6e9ed;
+  padding: 0 20px;
+}
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 20px;
+}
+.field.full {
+  grid-column: 1/-1;
+}
+.picker {
+  width: 100%;
+  min-height: 49px;
+  border: 1px solid #d5dae0;
+  border-radius: 7px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.picker span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.picker b {
+  font-size: 12px;
+}
+.picker small {
+  font: 10px 'DM Mono';
+  color: #7d8794;
+}
+.picker em,
+.selected-head button {
+  border: 0;
+  background: none;
+  color: #e76030;
+  font-size: 11px;
+  font-style: normal;
+  cursor: pointer;
+}
+.suggestions {
+  font-size: 10px;
+  color: #778291;
+  padding-top: 8px;
+}
+.suggestions button {
+  border: 0;
+  background: #fff1eb;
+  color: #c94e23;
+  border-radius: 12px;
+  margin: 3px;
+  padding: 4px 7px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #586475;
+}
+.toggle input {
+  display: none;
+}
+.toggle span {
+  width: 30px;
+  height: 17px;
+  background: #bcc3cb;
+  border-radius: 10px;
+  padding: 2px;
+}
+.toggle span:after {
+  content: '';
+  display: block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.15s;
+}
+.toggle input:checked + span {
+  background: #ff6c37;
+}
+.toggle input:checked + span:after {
+  transform: translateX(13px);
+}
+.field.selected {
+  padding: 0 20px 18px;
+}
+.selected-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-top: 1px solid #edf0f2;
+  padding: 9px;
+}
+.chip > span {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #e9f7ef;
+  color: #258b51;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+}
+.chip div {
+  min-width: 0;
+  flex: 1;
+}
+.chip b,
+.chip small {
+  display: block;
+  font-size: 11px;
+}
+.chip small {
+  font: 9px 'DM Mono';
+  color: #84909f;
+  margin-top: 3px;
+}
+.chip button {
+  border: 0;
+  background: none;
+  color: #89929e;
+  cursor: pointer;
+}
+.runbar {
+  border-top: 1px solid #e6e9ed;
+  padding: 13px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.runbar > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #75808e;
+  font-size: 11px;
+}
+.runbar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #aab2bc;
+}
+.runbar i.running {
+  background: #e5a829;
+  box-shadow: 0 0 0 4px #fff2ca;
+}
+.runbar i.passed {
+  background: #27ae60;
+}
+.runbar i.failed {
+  background: #d94a4a;
+}
+.run {
+  border: 0;
+  border-radius: 6px;
+  background: #ff6c37;
+  color: #fff;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+.run:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.console {
+  margin-top: 16px;
+  background: #171d26;
+  color: #cbd3dc;
+  overflow: hidden;
+}
+.console-head {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  row-gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #303846;
+  padding: 8px 16px;
+}
+.console-head div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  font-size: 11px;
+}
+.console-head i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #35b66a;
+}
+.console-head button {
+  border: 0;
+  background: none;
+  color: #8f9aa8;
+  font-size: 10px;
+  cursor: pointer;
+}
+.console pre {
+  margin: 0;
+  padding: 15px;
+  min-height: 145px;
+  max-height: 350px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font: 10px/1.65 'DM Mono';
+  color: #aeb9c5;
+}
+.empty {
+  text-align: center;
+  color: #8a95a3;
+  font-size: 11px;
+  padding: 30px;
+}
+.empty.small {
+  padding: 18px;
+  border: 1px dashed #d8dde3;
+  border-radius: 7px;
+}
+.alert {
+  margin: 0 20px 14px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #fff0f0;
+  color: #aa3535;
+  font-size: 11px;
+}
+.loading {
+  height: 100vh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  color: #677281;
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e4e7eb;
+  border-top-color: #ff6c37;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: auto;
+}
+.loading-percentage {
+  color: #ff6c37;
+  font: 600 14px 'DM Mono';
+  font-variant-numeric: tabular-nums;
+}
+.loading-elapsed {
+  color: #7689a0;
+  font: 500 12px 'DM Mono';
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.error {
+  color: #b03939;
+}
+@media (max-width: 1200px) {
+  .app {
+    grid-template-columns: 65px var(--side-panel-width, 330px) minmax(0, 1fr);
+  }
+  .workspace {
+    padding: 16px;
+  }
+  .form {
+    grid-template-columns: 1fr;
+  }
+  .field.full {
+    grid-column: auto;
+  }
+}
+
+/* Full local log-directory display */
+.log-directory .path-input {
+  font-family: 'DM Mono', Consolas, monospace;
+  font-size: 11px;
+}
+.log-directory .path-value {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  background: #f7f8fa;
+  color: #394657;
+  font:
+    10px/1.5 'DM Mono',
+    Consolas,
+    monospace;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  user-select: text;
+}
+.log-directory > small {
+  color: #7d8794;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Foldable local settings */
+.local-settings {
+  grid-column: 1/-1;
+}
+.settings-fold {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 11px 12px;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+  color: #293442;
+  cursor: pointer;
+}
+.settings-fold span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.settings-fold b {
+  font-size: 11px;
+}
+.settings-fold small {
+  color: #7d8794;
+  font-size: 10px;
+}
+.settings-fold em {
+  font-size: 19px;
+  line-height: 1;
+  color: #ff6c37;
+  font-style: normal;
+}
+.local-settings-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #e1e5e9;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.local-settings-body .full {
+  grid-column: 1/-1;
+}
+
+/* Dark theme */
+[data-theme='dark'] {
+  color-scheme: dark;
+  background: #11161e;
+  color: #dce3eb;
+}
+[data-theme='dark'] body {
+  background: #11161e;
+}
+[data-theme='dark'] .app {
+  background: #11161e;
+  color: #dce3eb;
+}
+[data-theme='dark'] .workspace {
+  background: #11161e;
+}
+[data-theme='dark'] .request-card {
+  background: #181f29;
+  border-color: #303947;
+  box-shadow: none;
+}
+[data-theme='dark'] .selection-count,
+[data-theme='dark'] .crumb {
+  color: #9da9b7;
+}
+[data-theme='dark'] .field select,
+[data-theme='dark'] .field input,
+[data-theme='dark'] .picker {
+  background: #202834;
+  border-color: #3a4554;
+  color: #e6ebf1;
+}
+[data-theme='dark'] .tabs,
+[data-theme='dark'] .runbar {
+  border-color: #303947;
+}
+[data-theme='dark'] .tabs button {
+  color: #aab5c2;
+}
+[data-theme='dark'] .tabs button.active {
+  color: #fff;
+}
+[data-theme='dark'] .picker small,
+[data-theme='dark'] .chip small {
+  color: #9aa7b5;
+}
+[data-theme='dark'] .settings-fold,
+[data-theme='dark'] .local-settings-body {
+  background: #202834;
+  border-color: #3a4554;
+  color: #e6ebf1;
+}
+[data-theme='dark'] .settings-fold small,
+[data-theme='dark'] .log-directory > small {
+  color: #9aa7b5;
+}
+[data-theme='dark'] .log-directory .path-value {
+  background: #151b23;
+  border-color: #3a4554;
+  color: #cbd5df;
+}
+[data-theme='dark'] .selected-head,
+[data-theme='dark'] .chip {
+  border-color: #303947;
+}
+[data-theme='dark'] .empty.small {
+  border-color: #3a4554;
+}
+[data-theme='dark'] .console {
+  border-color: #303947;
+}
+[data-theme='dark'] .alert {
+  background: #3a2024;
+  color: #ffb3b8;
+}
+[data-theme='dark'] .toggle {
+  color: #b4beca;
+}
+@media (max-width: 1200px) {
+  .local-settings-body {
+    grid-template-columns: 1fr;
+  }
+  .local-settings-body .full {
+    grid-column: auto;
+  }
+}
+
+/* Test-driven compatible config selection */
+.config-guidance {
+  padding: 13px;
+  border: 1px dashed #d5dae0;
+  border-radius: 7px;
+  background: #fafbfc;
+  color: #75808e;
+  font-size: 11px;
+}
+.config-guidance.warning {
+  border-color: #e9bba9;
+  background: #fff8f4;
+  color: #a95030;
+}
+.config-choices {
+  display: grid;
+  gap: 8px;
+  max-height: 245px;
+  overflow: auto;
+  padding-right: 3px;
+}
+.config-choice-content {
+  flex: 1;
+  min-width: 0;
+  cursor: text;
+  user-select: text;
+}
+.config-choices span {
+  min-width: 0;
+}
+.config-choices b,
+.config-choices small {
+  display: block;
+}
+.config-choices b {
+  font-size: 11px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.config-choices small {
+  margin-top: 4px;
+  color: #84909f;
+  font:
+    9px/1.4 'DM Mono',
+    Consolas,
+    monospace;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.config-choices em {
+  flex: none;
+  color: #e76030;
+  font-size: 10px;
+  font-style: normal;
+}
+[data-theme='dark'] .config-guidance {
+  background: #202834;
+  border-color: #465160;
+  color: #aab5c2;
+}
+[data-theme='dark'] .config-guidance.warning {
+  background: #38251f;
+  border-color: #704535;
+  color: #f0b299;
+}
+/* Collapsible Test Config panel and resolved run tree */
+.config-panel-toggle {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+  border: 1px solid #d7dce2;
+  border-radius: 6px;
+  background: #fff;
+  color: #ff6c37;
+  font-size: 10px;
+  cursor: pointer;
+}
+.run-tree {
+  margin: 16px 20px 0;
+  padding: 12px 14px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background: #fafbfc;
+}
+.tree-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  min-height: 28px;
+  padding: 6px 0;
+  color: #344050;
+}
+.tree-node.root {
+  grid-template-columns: 12px 110px minmax(0, 1fr);
+}
+.tree-node b {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+.tree-node em {
+  min-width: 0;
+  color: #74808f;
+  font:
+    10px/1.45 'DM Mono',
+    Consolas,
+    monospace;
+  font-style: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.tree-status {
+  width: 8px;
+  height: 8px;
+  margin-top: 2px;
+  border: 2px solid #e2a129;
+  border-radius: 50%;
+  background: #fff;
+}
+.tree-status.ready {
+  border-color: #27ae60;
+  background: #27ae60;
+}
+.tree-children {
+  position: relative;
+  margin-left: 6px;
+  padding-left: 28px;
+  border-left: 1px solid #cfd6de;
+}
+.tree-children:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 21px;
+  border-top: 1px solid #cfd6de;
+}
+.tree-children .tree-node:before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: -28px;
+  width: 20px;
+  border-top: 1px solid #cfd6de;
+}
+[data-theme='dark'] .config-panel-toggle {
+  background: #222b37;
+  border-color: #3a4554;
+  color: #ff8a61;
+}
+[data-theme='dark'] .run-tree {
+  background: #151b23;
+  border-color: #3a4554;
+}
+[data-theme='dark'] .tree-node {
+  color: #dce3eb;
+}
+[data-theme='dark'] .tree-node em {
+  color: #9eabb9;
+}
+[data-theme='dark'] .tree-children,
+[data-theme='dark'] .tree-children:before,
+[data-theme='dark'] .tree-children .tree-node:before {
+  border-color: #465160;
+}
+
+/* Foldable compatible-config chooser */
+.config-list-fold {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+  color: #293442;
+  text-align: left;
+  cursor: pointer;
+}
+.config-list-fold span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.config-list-fold b {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.config-list-fold small {
+  color: #7d8794;
+  font:
+    10px/1.4 'DM Mono',
+    Consolas,
+    monospace;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.config-list-fold em {
+  color: #ff6c37;
+  font-size: 9px;
+  font-style: normal;
+}
+.compatible-configs > .config-guidance,
+.compatible-configs > .config-choices {
+  margin-top: 9px;
+}
+[data-theme='dark'] .config-list-fold {
+  background: #202834;
+  border-color: #3a4554;
+  color: #e6ebf1;
+}
+[data-theme='dark'] .config-list-fold small {
+  color: #9aa7b5;
+}
+
+/* Whole Test Config disclosure */
+.config-master-fold {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.config-master-fold:hover {
+  background: #fafbfc;
+}
+.config-master-fold:focus-visible {
+  outline: 2px solid #ff6c37;
+  outline-offset: -2px;
+}
+.config-master-fold h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.config-master-symbol {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #f0a184;
+  border-radius: 5px;
+  background: #fff7f3;
+  color: #e76030;
+  font-size: 17px;
+  line-height: 1;
+}
+[data-theme='dark'] .config-master-fold:hover {
+  background: #202834;
+}
+[data-theme='dark'] .config-master-symbol {
+  background: #38251f;
+  border-color: #704535;
+  color: #ff8a61;
+}
+
+/* Unified leading plus/minus disclosure controls */
+.fold-symbol {
+  display: inline-grid !important;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #f0a184;
+  border-radius: 5px;
+  background: #fff7f3;
+  color: #e76030 !important;
+  font:
+    17px/1 Inter,
+    Segoe UI,
+    sans-serif !important;
+  font-style: normal !important;
+  letter-spacing: 0;
+}
+.config-master-fold h1 {
+  gap: 7px;
+}
+.config-list-fold,
+.settings-fold {
+  justify-content: flex-start;
+  gap: 10px;
+}
+.config-list-fold > span,
+.settings-fold > span {
+  flex: 1;
+  min-width: 0;
+}
+.selected-head {
+  align-items: center;
+}
+.selected-fold {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #293442;
+  text-align: left;
+  cursor: pointer;
+}
+.selected-fold > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.selected-fold b {
+  font-size: 11px;
+}
+.selected-fold small {
+  color: #7d8794;
+  font:
+    10px/1.4 'DM Mono',
+    Consolas,
+    monospace;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-theme='dark'] .fold-symbol {
+  background: #38251f;
+  border-color: #704535;
+  color: #ff8a61 !important;
+}
+[data-theme='dark'] .selected-fold {
+  color: #e6ebf1;
+}
+[data-theme='dark'] .selected-fold small {
+  color: #9aa7b5;
+}
+
+/* Run button is the readiness indicator */
+.runbar .run {
+  order: -1;
+}
+.runbar .run:not(:disabled) {
+  box-shadow: 0 2px 8px #ff6c3740;
+}
+.runbar .run:disabled {
+  background: #8c96a3;
+  color: #dce1e6;
+  box-shadow: none;
+  opacity: 0.55;
+}
+.run-status {
+  margin-left: auto;
+}
+[data-theme='dark'] .runbar .run:disabled {
+  background: #3a4554;
+  color: #7f8b99;
+}
+
+/* Per-run test inclusion checkboxes */
+.run-check {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  cursor: pointer;
+}
+.run-check input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.run-check span {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 1px solid #27ae60;
+  border-radius: 5px;
+  background: #e9f7ef;
+  color: #258b51;
+  font-size: 11px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.run-check input:not(:checked) + span {
+  border-color: #9ba6b3;
+  background: transparent;
+  color: transparent;
+}
+.run-check input:focus-visible + span {
+  outline: 2px solid #ff6c37;
+  outline-offset: 2px;
+}
+[data-theme='dark'] .run-check span {
+  background: #20382d;
+  border-color: #48bd77;
+  color: #79d69c;
+}
+[data-theme='dark'] .run-check input:not(:checked) + span {
+  background: transparent;
+  border-color: #657181;
+  color: transparent;
+}
+
+/* Ordered editable run controls */
+.azure-setting {
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.azure-setting .toggle {
+  font-weight: 600;
+  color: #293442;
+}
+.azure-setting > small {
+  padding-left: 38px;
+  color: #7d8794;
+  font-size: 10px;
+}
+[data-theme='dark'] .azure-setting {
+  background: #202834;
+  border-color: #3a4554;
+}
+[data-theme='dark'] .azure-setting .toggle {
+  color: #e6ebf1;
+}
+[data-theme='dark'] .azure-setting > small {
+  color: #9aa7b5;
+}
+
+/* Matching ordered control cards */
+.control-stack {
+  grid-template-columns: 1fr;
+}
+.control-stack > .full {
+  grid-column: 1;
+}
+.control-stack .selected {
+  padding: 0;
+}
+.control-stack .selected-head.config-list-fold {
+  margin: 0;
+}
+.control-stack .selected-fold {
+  width: 100%;
+}
+.control-stack .selected-body {
+  padding: 9px 12px 2px;
+}
+.case-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 9px;
+  color: #7d8794;
+  font-size: 10px;
+}
+.case-actions button {
+  border: 0;
+  background: none;
+  color: #e76030;
+  font-size: 10px;
+  cursor: pointer;
+}
+.allure-setting .toggle input:disabled + span {
+  opacity: 0.45;
+}
+[data-theme='dark'] .case-actions {
+  color: #9aa7b5;
+}
+
+/* Whole editable Controls disclosure */
+.controls-panel {
+  margin: 16px 20px 20px;
+}
+.controls-panel > .controls-fold {
+  width: 100%;
+}
+.controls-panel > .control-stack {
+  padding: 14px 0 0;
+}
+[data-theme='dark'] .controls-panel > .controls-fold {
+  background: #202834;
+  border-color: #3a4554;
+  color: #e6ebf1;
+}
+
+/* Controls uses the same clean disclosure language as Test Config */
+.controls-panel {
+  margin: 0;
+  border-top: 1px solid #e1e5e9;
+}
+.controls-panel > .controls-fold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #293442;
+  text-align: left;
+  cursor: pointer;
+}
+.controls-panel > .controls-fold b {
+  font-size: 16px;
+}
+.controls-panel > .control-stack {
+  padding: 0 20px 20px;
+}
+.controls-panel > .controls-fold:hover {
+  background: #fafbfc;
+}
+.controls-panel > .controls-fold:focus-visible {
+  outline: 2px solid #ff6c37;
+  outline-offset: -2px;
+}
+[data-theme='dark'] .controls-panel {
+  border-color: #303947;
+}
+[data-theme='dark'] .controls-panel > .controls-fold {
+  background: transparent;
+  border: 0;
+  color: #e6ebf1;
+}
+[data-theme='dark'] .controls-panel > .controls-fold:hover {
+  background: #202834;
+}
+
+/* Consistent spacing inside expanded Setup cards */
+.control-stack .local-settings-body {
+  margin-top: 8px;
+  padding: 12px;
+}
+.control-stack .local-settings-body .field {
+  margin: 0;
+}
+
+/* One disclosure bubble per Setup item */
+.control-stack .local-settings-body {
+  margin-top: 0;
+  padding: 12px 0 0 54px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+[data-theme='dark'] .control-stack .local-settings-body {
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 1200px) {
+  .control-stack .local-settings-body {
+    padding-left: 42px;
+  }
+}
+
+/* Keep each expanded Setup editor inside its single disclosure card. */
+.control-stack .local-settings {
+  overflow: hidden;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.control-stack .local-settings > .settings-fold {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.control-stack .local-settings > .local-settings-body {
+  padding: 8px 20px 18px 74px;
+}
+[data-theme='dark'] .control-stack .local-settings {
+  border-color: #3a4554;
+  background: #202834;
+}
+@media (max-width: 1200px) {
+  .control-stack .local-settings > .local-settings-body {
+    padding-left: 62px;
+  }
+}
+
+/* Test Config, Setup, and Setup items share one disclosure-card concept. */
+.controls-panel {
+  margin: 16px 20px 20px;
+  overflow: hidden;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.controls-panel > .controls-fold {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.controls-panel > .control-stack {
+  padding: 0 20px 20px;
+}
+[data-theme='dark'] .controls-panel {
+  border-color: #3a4554;
+  background: #202834;
+}
+[data-theme='dark'] .controls-panel > .controls-fold {
+  background: transparent;
+}
+
+/* Keep Test Suite and Test Case choices inside their disclosure cards. */
+.control-stack .compatible-configs,
+.control-stack .selected {
+  overflow: hidden;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.control-stack .compatible-configs > .config-list-fold,
+.control-stack .selected > .selected-head.config-list-fold {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.control-stack .compatible-configs > .config-guidance,
+.control-stack .compatible-configs > .config-choices {
+  margin: 0;
+  padding: 8px 20px 18px 74px;
+}
+.control-stack .compatible-configs > .config-guidance {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.control-stack .selected > .selected-body {
+  padding: 8px 20px 18px 74px;
+}
+[data-theme='dark'] .control-stack .compatible-configs,
+[data-theme='dark'] .control-stack .selected {
+  border-color: #3a4554;
+  background: #202834;
+}
+@media (max-width: 1200px) {
+  .control-stack .compatible-configs > .config-guidance,
+  .control-stack .compatible-configs > .config-choices,
+  .control-stack .selected > .selected-body {
+    padding-left: 62px;
+  }
+}
+
+/* Wide Test Log editor with its resolved-path preview above. */
+.control-stack .test-log-settings > .local-settings-body {
+  padding-left: 20px;
+}
+.log-directory {
+  min-width: 0;
+}
+.log-directory .path-value {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.log-directory .path-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 1200px) {
+  .control-stack .test-log-settings > .local-settings-body {
+    padding-left: 20px;
+  }
+}
+
+/* Constrain Test Log content and normalize its internal spacing. */
+.control-stack .test-log-settings > .local-settings-body {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 14px 20px 18px;
+}
+.control-stack .test-log-settings .log-directory.full {
+  grid-column: 1/-1;
+  width: 100%;
+  max-width: 100%;
+}
+.log-directory {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.log-directory .path-value {
+  max-width: 100%;
+  margin: 0;
+}
+.log-directory .path-input {
+  max-width: 100%;
+}
+@media (max-width: 1200px) {
+  .control-stack .test-log-settings > .local-settings-body {
+    padding: 14px 20px 18px;
+  }
+  .control-stack .test-log-settings .log-directory.full {
+    grid-column: 1/-1;
+  }
+}
+
+/* Preserve stale indexed selections and make their status unmistakable. */
+.unavailable-note {
+  display: block;
+  margin-top: 5px;
+  color: #d83b3b;
+  font:
+    700 10px/1.35 Inter,
+    Segoe UI,
+    sans-serif;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+.tree-node.unavailable > b,
+.tree-node.unavailable > em,
+.chip.unavailable b,
+.chip.unavailable small {
+  color: #d83b3b;
+}
+.chip.unavailable {
+  background: #fff3f3;
+}
+[data-theme='dark'] .unavailable-note,
+[data-theme='dark'] .tree-node.unavailable > b,
+[data-theme='dark'] .tree-node.unavailable > em,
+[data-theme='dark'] .chip.unavailable b,
+[data-theme='dark'] .chip.unavailable small {
+  color: #ff7777;
+}
+[data-theme='dark'] .chip.unavailable {
+  background: #382326;
+}
+
+/* Readable 12px UI baseline and inline repository branch badges. */
+body,
+button,
+input,
+select {
+  font-size: 12px;
+}
+small,
+.crumb,
+.selection-count,
+.request-title p,
+.field label,
+.tabs button,
+.tree-node,
+.toggle,
+.selected-head,
+.chip b,
+.chip small,
+.runbar,
+.console-head,
+.empty,
+.config-guidance,
+.config-choices b,
+.config-choices small,
+.config-choices em,
+.settings-fold b,
+.settings-fold small,
+.config-list-fold b,
+.config-list-fold small {
+  font-size: 12px;
+}
+
+/* Softer warm-beige light theme; dark theme remains unchanged. */
+:root:not([data-theme='dark']) {
+  color: #2d302f;
+  background: #f1eee7;
+}
+:root:not([data-theme='dark']) body,
+:root:not([data-theme='dark']) .workspace {
+  background: #f1eee7;
+}
+:root:not([data-theme='dark']) .request-card,
+:root:not([data-theme='dark']) .controls-panel,
+:root:not([data-theme='dark']) .control-stack .local-settings,
+:root:not([data-theme='dark']) .control-stack .compatible-configs,
+:root:not([data-theme='dark']) .control-stack .selected,
+:root:not([data-theme='dark']) .run-tree {
+  background: #faf7f1;
+  border-color: #ddd7cc;
+}
+:root:not([data-theme='dark']) .branch,
+:root:not([data-theme='dark']) .field select,
+:root:not([data-theme='dark']) .field input,
+:root:not([data-theme='dark']) .picker {
+  background: #fffdf8;
+  border-color: #d8d1c5;
+}
+:root:not([data-theme='dark']) .controls-panel > .controls-fold:hover {
+  background: #f0ebe2;
+}
+
+/* Let Execution Trace consume the remaining workspace below the run setup. */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.console {
+  display: flex;
+  flex: 1 0 320px;
+  min-height: 320px;
+  flex-direction: column;
+}
+.console pre {
+  flex: 1;
+  min-height: 275px;
+  max-height: none;
+}
+
+/* Test Suite uses the same include checkbox pattern as Test Case. */
+.config-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.config-choice-row > .run-check {
+  margin-left: 2px;
+}
+.unchecked-note {
+  display: block;
+  margin-top: 5px;
+  color: #b17424;
+  font:
+    700 12px/1.35 Inter,
+    Segoe UI,
+    sans-serif;
+  letter-spacing: 0.04em;
+}
+[data-theme='dark'] .unchecked-note {
+  color: #e5b45f;
+}
+
+/* Flat Test Suite rows matching the Test Case list. */
+.config-choices {
+  gap: 0;
+}
+.config-choice-row {
+  gap: 9px;
+  padding: 9px;
+  border-top: 1px solid #edf0f2;
+}
+[data-theme='dark'] .config-choice-row {
+  border-color: #303947;
+}
+
+/* Stereo-style run controls. */
+.run-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+}
+.run-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+}
+.stop-run {
+  padding: 9px 14px;
+  border: 1px solid #d45b54;
+  border-radius: 6px;
+  background: transparent;
+  color: #c84943;
+  font-weight: 600;
+  cursor: pointer;
+}
+.stop-run:hover:not(:disabled) {
+  background: #fff1ef;
+}
+.stop-run:disabled {
+  border-color: #c7cbd0;
+  color: #9aa1aa;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+[data-theme='dark'] .stop-run {
+  border-color: #b85b57;
+  color: #ff8b84;
+}
+[data-theme='dark'] .stop-run:hover:not(:disabled) {
+  background: #382326;
+}
+[data-theme='dark'] .stop-run:disabled {
+  border-color: #465160;
+  color: #737f8d;
+}
+
+/* Keep frequent run controls directly beneath Setup with no dead space. */
+.controls-panel > .control-stack {
+  padding-bottom: 10px;
+}
+.controls-panel > .runbar {
+  justify-content: flex-start;
+  margin: 0 20px 16px;
+  padding: 14px 0 0;
+}
+.controls-panel > .runbar .run-actions {
+  order: -1;
+  margin-left: 0;
+}
+.controls-panel > .runbar .run-status {
+  order: 1;
+  margin-left: auto;
+}
+.runbar .run {
+  order: initial;
+}
+
+/* Use Remote Config space efficiently: wider fields, tighter grid. */
+.control-stack .remote-settings > .local-settings-body {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 10px 20px 18px 54px;
+}
+.control-stack .remote-settings .field {
+  min-width: 0;
+}
+.control-stack .remote-settings .field input,
+.control-stack .remote-settings .field select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 1200px) {
+  .control-stack .remote-settings > .local-settings-body {
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 42px;
+  }
+}
+
+/* Anchor Run first so Local/Remote mode switching does not shift it. */
+.run-actions .run {
+  order: -1;
+}
+
+/* Labeled Remote Config summary in the disclosure title. */
+.settings-fold .remote-config-summary {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 5px 22px;
+  min-width: 0;
+  white-space: normal;
+}
+.settings-fold .remote-config-summary > span {
+  display: inline;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.remote-config-summary strong {
+  color: #778291;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+[data-theme='dark'] .remote-config-summary strong {
+  color: #9aa7b5;
+}
+
+/* Remote POD configuration can intentionally differ from the local Test Index. */
+.branch-mismatch-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 20px 14px 54px;
+  padding: 10px 12px;
+  border: 1px solid #dfbf78;
+  border-radius: 6px;
+  background: #fff8e7;
+  color: #76571d;
+  font-size: 12px;
+}
+.branch-mismatch-note > span {
+  color: #d18b00;
+}
+.branch-mismatch-note strong,
+.branch-mismatch-note small,
+.branch-mismatch-note small > span {
+  display: block;
+}
+.branch-mismatch-note small {
+  margin-top: 4px;
+  color: #866625;
+  font-family: 'DM Mono', Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+[data-theme='dark'] .branch-mismatch-note {
+  border-color: #80642d;
+  background: #39331d;
+  color: #fff19a;
+}
+[data-theme='dark'] .branch-mismatch-note small {
+  color: #e7ca76;
+}
+@media (max-width: 1200px) {
+  .branch-mismatch-note {
+    margin-left: 42px;
+  }
+}
+
+/* Non-blocking cross-mode active-run warning. */
+.parallel-run-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 20px 10px;
+  padding: 9px 11px;
+  border: 1px solid #dfbf78;
+  border-radius: 6px;
+  background: #fff8e7;
+  color: #76571d;
+  font-size: 12px;
+}
+.parallel-run-note > span {
+  color: #e5a829;
+}
+.parallel-run-note strong {
+  font-weight: 700;
+}
+[data-theme='dark'] .parallel-run-note {
+  border-color: #735d2f;
+  background: #30291b;
+  color: #e8ca88;
+}
+
+/* Compact run controls remain available when Test Config is collapsed. */
+.collapsed-run-controls {
+  border-top: 1px solid #e6e9ed;
+}
+.collapsed-run-controls > .parallel-run-note {
+  margin: 14px 20px 0;
+}
+.collapsed-runbar {
+  border-top: 0;
+  padding: 14px 20px;
+}
+.collapsed-runbar .run-actions {
+  order: -1;
+  margin-left: 0;
+}
+.collapsed-runbar .run-status {
+  order: 1;
+  margin-left: auto;
+}
+[data-theme='dark'] .collapsed-run-controls {
+  border-color: #303947;
+}
+
+/* Dedicated Test Run control section, separate from Setup. */
+.run-control-panel {
+  overflow: hidden;
+  margin: 16px 20px 20px;
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+  background: #fafbfc;
+}
+.run-control-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 13px 18px;
+}
+.run-control-heading > b {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.run-control-heading > small {
+  color: #7d8794;
+}
+.run-control-panel > .parallel-run-note {
+  margin: 0 18px 10px;
+}
+.test-runbar {
+  border-top: 1px solid #e1e5e9;
+  padding: 13px 18px;
+}
+.test-runbar .run-actions {
+  order: -1;
+  margin-left: 0;
+}
+.test-runbar .run-status {
+  order: 1;
+  margin-left: auto;
+}
+[data-theme='dark'] .run-control-panel {
+  border-color: #3a4554;
+  background: #202834;
+}
+[data-theme='dark'] .run-control-heading > small {
+  color: #9aa7b5;
+}
+[data-theme='dark'] .test-runbar {
+  border-color: #303947;
+}
+:root:not([data-theme='dark']) .run-control-panel {
+  background: #faf7f1;
+  border-color: #ddd7cc;
+}
+
+/* Buttons are self-explanatory; no extra Test Run heading needed. */
+.run-control-panel > .test-runbar {
+  border-top: 0;
+}
+.run-control-panel > .parallel-run-note:first-child {
+  margin-top: 13px;
+}
+
+/* Larger readable Execution Trace typography. */
+.console pre {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Larger readable Test Config typography. */
+.tabs button,
+.tree-node,
+.tree-node b,
+.tree-node em {
+  font-size: 13px;
+}
+.tree-node em {
+  line-height: 1.5;
+}
+
+/* Comfortable review size for the collapsible Test Config preview. */
+.tabs button,
+.tree-node,
+.tree-node b,
+.tree-node em {
+  font-size: 14px;
+}
+
+/* Readable selected suite name beneath the Test Config title. */
+.request-title p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Stable line-number gutter for streamed Execution Trace output. */
+.console .trace-output {
+  padding-left: 0;
+  overflow-x: hidden;
+}
+.trace-line {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  width: 100%;
+}
+.trace-line-number {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 0 0.9rem 0 0.75rem;
+  color: var(--muted);
+  background: var(--console-bg, var(--panel));
+  border-right: 1px solid var(--border);
+  text-align: right;
+  user-select: none;
+}
+.trace-line-content {
+  padding-left: 0.9rem;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Make the active local execution mode easy to identify at a glance. */
+.method.local {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Explicit, mutually exclusive Azure session modes. */
+.azure-options {
+  display: grid;
+  gap: 10px;
+}
+.azure-options .azure-choice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text, #293442);
+}
+.azure-options .azure-choice > input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #ff6c37;
+}
+
+[data-theme='dark'] .azure-options .azure-choice {
+  color: #e6ebf1;
+}
+
+/* Structured Remote Pod REST response viewer. */
+.remote-response {
+  flex: 1;
+  min-height: 275px;
+  padding: 22px;
+  overflow: auto;
+  font:
+    14px/1.55 'DM Mono',
+    monospace;
+}
+.remote-transaction {
+  max-height: min(72vh, 900px);
+  overflow: auto;
+  padding: 22px;
+}
+.rest-fold {
+  border: 1px solid #303846;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rest-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  color: #e6ebf1;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  font:
+    700 13px Inter,
+    sans-serif;
+  letter-spacing: 0.04em;
+}
+.rest-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.rest-fold-symbol {
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid #84462f;
+  border-radius: 5px;
+  color: #ff6c37;
+}
+.rest-fold-symbol::before {
+  content: '+';
+  font-size: 16px;
+  line-height: 1;
+}
+.rest-fold[open] .rest-fold-symbol::before {
+  content: '−';
+}
+.rest-fold-body {
+  display: grid;
+  gap: 18px;
+  padding: 0 15px 15px;
+  border-top: 1px solid #303846;
+}
+.rest-fold-body > .request-target,
+.rest-fold-body > .rest-section {
+  margin-top: 15px;
+}
+.rest-response-section {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #303846;
+}
+.rest-response-section > h2 {
+  margin: 0 0 13px;
+  color: #e6ebf1;
+  font:
+    700 13px Inter,
+    sans-serif;
+  letter-spacing: 0.04em;
+}
+.rest-fold.nested {
+  margin-bottom: 18px;
+}
+.response-body-section > h3 {
+  margin-bottom: 11px;
+}
+.response-body-section .remote-response {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+}
+.rest-section h3 {
+  margin: 0 0 11px;
+  color: #e6ebf1;
+  font:
+    700 12px Inter,
+    sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.request-target {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 11px;
+  padding: 10px 13px;
+  border: 1px solid #303846;
+  border-radius: 8px;
+  font:
+    13px/1.5 'DM Mono',
+    monospace;
+}
+.request-target b {
+  color: #ff8a5f;
+}
+.request-target span {
+  min-width: 0;
+  color: #aeb9c5;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.console pre.request-body {
+  min-height: 0;
+  max-height: none;
+  padding: 15px;
+  border: 1px solid #303846;
+  border-radius: 8px;
+  background: #121821;
+  color: #cbd3dc;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+  font:
+    14px/1.55 'DM Mono',
+    monospace;
+}
+.response-section {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #303846;
+}
+.response-section .remote-response {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+}
+.response-pending {
+  margin-top: 22px;
+  padding: 18px;
+  border-top: 1px solid #303846;
+  color: #8f9aa8;
+  font:
+    13px 'DM Mono',
+    monospace;
+}
+.response-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 7px 11px;
+  border: 1px solid #536071;
+  border-radius: 6px;
+}
+.response-status b {
+  font:
+    700 12px Inter,
+    sans-serif;
+  letter-spacing: 0.06em;
+}
+.response-status.success {
+  color: #72dd98;
+  border-color: #387c55;
+  background: #183326;
+}
+.response-status.failure {
+  color: #ff8585;
+  border-color: #914949;
+  background: #3a2024;
+}
+.response-fields {
+  display: grid;
+  border: 1px solid #303846;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.response-field {
+  display: grid;
+  grid-template-columns: minmax(130px, 190px) minmax(0, 1fr);
+  gap: 18px;
+  padding: 13px 15px;
+  border-bottom: 1px solid #303846;
+}
+.response-field:last-child {
+  border-bottom: 0;
+}
+.response-field b {
+  color: #e6ebf1;
+  overflow-wrap: anywhere;
+}
+.response-field span,
+.response-field a {
+  min-width: 0;
+  color: #aeb9c5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.response-field a {
+  color: #78a9ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.response-field a:hover {
+  color: #9bbcff;
+}
+@media (max-width: 900px) {
+  .response-field {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+/* Retained Execution Trace pages keep completed runs available while the newest run stays live. */
+.trace-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.console-head .trace-pager button,
+.console-head .trace-clear {
+  min-width: 76px;
+  padding: 4px 7px;
+  border: 1px solid #3a4554;
+  border-radius: 4px;
+  background: transparent;
+}
+.console-head .trace-pager button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.trace-pager .trace-page-position {
+  min-width: 42px;
+  text-align: center;
+  color: #cbd5df;
+  font: 12px 'DM Mono';
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 1px solid #3a4554;
+  border-radius: 4px;
+  background: #202834;
+}
+.trace-pager time {
+  color: #aeb9c5;
+  font: 12px 'DM Mono';
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 1px solid #3a4554;
+  border-radius: 4px;
+  background: #202834;
+}
+
+/* Test Config follows the shared disclosure pattern: fold control, title, mode, then detail. */
+.config-title-copy {
+  min-width: 0;
+  flex: 1;
+}
+.config-title-copy h1 {
+  flex-wrap: wrap;
+}
+.config-title-copy .method {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1;
+}
+.config-title-copy p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  user-select: text;
+}
+.config-title-copy + .selection-count {
+  flex: none;
+}
+[data-theme='dark'] .method.remote {
+  background: #183153;
+  color: #8fc3ff;
+}
+/* Run pages follow the selected app theme instead of remaining permanently dark. */
+:root:not([data-theme='dark']) .console {
+  background: #fffdf8;
+  color: #293442;
+  border-color: #d8d1c5;
+}
+:root:not([data-theme='dark']) .console-head,
+:root:not([data-theme='dark']) .rest-fold,
+:root:not([data-theme='dark']) .rest-fold-body,
+:root:not([data-theme='dark']) .rest-response-section,
+:root:not([data-theme='dark']) .request-target,
+:root:not([data-theme='dark']) .console pre.request-body,
+:root:not([data-theme='dark']) .response-section,
+:root:not([data-theme='dark']) .response-pending,
+:root:not([data-theme='dark']) .response-fields,
+:root:not([data-theme='dark']) .response-field {
+  border-color: #d8d1c5;
+}
+:root:not([data-theme='dark']) .console-head button,
+:root:not([data-theme='dark']) .request-target span,
+:root:not([data-theme='dark']) .response-field span {
+  color: #596577;
+}
+:root:not([data-theme='dark']) .console pre {
+  color: #374151;
+}
+:root:not([data-theme='dark']) .rest-fold > summary,
+:root:not([data-theme='dark']) .rest-response-section > h2,
+:root:not([data-theme='dark']) .rest-section h3,
+:root:not([data-theme='dark']) .response-field b {
+  color: #202935;
+}
+:root:not([data-theme='dark']) .rest-fold-symbol {
+  border-color: #e2a184;
+  background: #fff7f3;
+}
+:root:not([data-theme='dark']) .console pre.request-body {
+  background: #f6f1e8;
+  color: #293442;
+}
+:root:not([data-theme='dark']) .response-pending {
+  color: #697586;
+}
+:root:not([data-theme='dark']) .console-head .trace-pager button,
+:root:not([data-theme='dark']) .console-head .trace-clear,
+:root:not([data-theme='dark']) .trace-pager .trace-page-position,
+:root:not([data-theme='dark']) .trace-pager time {
+  border-color: #c8c0b4;
+  background: #f1ece3;
+  color: #334155;
+}
+:root:not([data-theme='dark']) .console-head .trace-pager button:disabled {
+  color: #9aa3ad;
+}
+:root:not([data-theme='dark']) .response-status.success {
+  color: #18794e;
+  border-color: #8ac8a4;
+  background: #eaf7ef;
+}
+:root:not([data-theme='dark']) .response-status.failure {
+  color: #b42318;
+  border-color: #e2a29c;
+  background: #fff0f0;
+}
+/* ANSI warning colors maintain readable contrast in both console themes. */
+:root {
+  --ansi-red: #b42318;
+  --ansi-bright-red: #c4322b;
+  --ansi-blue: #2463b4;
+  --ansi-bright-blue: #175fba;
+  --ansi-green: #18794e;
+  --ansi-bright-green: #168344;
+  --ansi-yellow: #946200;
+  --ansi-bright-yellow: #805800;
+}
+:root[data-theme='dark'] {
+  --ansi-red: #ff6b6b;
+  --ansi-bright-red: #ff8585;
+  --ansi-blue: #78a9ff;
+  --ansi-bright-blue: #9bbcff;
+  --ansi-green: #50c878;
+  --ansi-bright-green: #72dd98;
+  --ansi-yellow: #f2d675;
+  --ansi-bright-yellow: #fff19a;
+}
+/* REST response links share the theme-aware console blue palette. */
+.response-field a {
+  color: var(--ansi-blue);
+}
+.response-field a:hover {
+  color: var(--ansi-bright-blue);
+}
+/* Browser-local run History: Date, Suite, execution type, branch set, then time. */
+.runner-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.runner-view[hidden] {
+  display: none;
+}
+.console pre,
+.remote-transaction {
+  overscroll-behavior: contain;
+}
+.alert.notice {
+  background: #fff7db;
+  color: #755300;
+}
+[data-theme='dark'] .alert.notice {
+  background: #39331d;
+  color: #fff19a;
+}
